@@ -74,7 +74,8 @@ public class AsyncApiImport {
         
         // Parse out options
         try {
-            if (checkForHelpOption(options, args)) {
+            if (checkForHelpOption(args)) {
+                displayHelp(options);
                 return;
             }
             CommandLineParser cliParser = new DefaultParser();
@@ -124,13 +125,23 @@ public class AsyncApiImport {
         }
     }
 
-    private static boolean checkForHelpOption( final Options options, final String[] args ) throws ParseException
+    private static boolean checkForHelpOption( String[] args )
     {
+        Option helpOption = new Option("h", "help", false, "Help Option");
+        Options options = new Options();
+        options.addOption(helpOption);
+
         CommandLineParser cliParser = new DefaultParser();
-        CommandLine commandLine = cliParser.parse(options, args);
-        boolean hasHelpOption = commandLine.hasOption("h");
-        if (hasHelpOption) {
-            displayHelp(options);
+        boolean hasHelpOption = false;
+
+        try {
+            CommandLine commandLine = cliParser.parse(options, args, false);
+            hasHelpOption = commandLine.hasOption("h");
+            // if (hasHelpOption) {
+            //     displayHelp(options);
+            // }
+        } catch (ParseException parseException) {
+            return false;
         }
         return hasHelpOption;
     }
