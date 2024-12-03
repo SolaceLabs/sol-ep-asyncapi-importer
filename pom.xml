@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.solace.ep.asyncapi</groupId>
-  <artifactId>sol-ep-importer-project</artifactId>
+  <artifactId>sol-ep-asyncapi-importer</artifactId>
   <version>0.1.0</version>
   <packaging>pom</packaging>
   <modules>
@@ -14,7 +14,7 @@
     <module>asyncapi-importer-cli</module>
   </modules>
 
-  <name>sol-ep-importer-project</name>
+  <name>Solace EP AsyncApi Importer</name>
   <url>http://www.example.com</url>
 
   <properties>
