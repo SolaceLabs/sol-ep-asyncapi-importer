@@ -1,0 +1,15 @@
+## OS
+.DS_Store
+
+## Dev Client
+.vscode/
+
+## Maven/Build
+target/
+asyncapi-accessor-v2/target/
+asyncapi-importer/target/
+effective-pom.xml
+dependency-reduced-pom.xml
+
+## Test
+asyncapi-importer-core/src/test/resources/config.properties

@@ -1,0 +1,175 @@
+---
+components:
+  schemas:
+    Order:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Order"
+      type: "object"
+      definitions:
+        order_item:
+          type: "object"
+          properties:
+            quantity:
+              description: "Quantity of the item ordered"
+              type: "integer"
+              minimum: 1
+            item_id:
+              description: "Unique identifier for the item"
+              type: "string"
+            price:
+              description: "Price per unit of the item"
+              type: "number"
+              minimum: 0
+          required:
+          - "item_id"
+          - "quantity"
+          - "price"
+        customer:
+          type: "object"
+          properties:
+            name:
+              description: "Name of the customer"
+              type: "string"
+            id:
+              description: "Unique identifier for the customer"
+              type: "string"
+            email:
+              format: "email"
+              description: "Email address of the customer"
+              type: "string"
+          required:
+          - "id"
+          - "name"
+          - "email"
+      required:
+      - "order_id"
+      - "customer"
+      - "items"
+      - "total_price"
+      - "order_date"
+      - "status"
+      properties:
+        order_date:
+          format: "date-time"
+          description: "Date and time when the order was placed"
+          type: "string"
+        total_price:
+          description: "Total price of the order"
+          type: "number"
+          minimum: 0
+        order_id:
+          description: "Unique identifier for the order"
+          type: "string"
+        items:
+          description: "Items included in the order"
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Order/components/schemas/Order_JSON/definitions/order_item"
+        customer:
+          description: "Customer placing the order"
+          $ref: "#/components/schemas/Order/components/schemas/Order_JSON/definitions/customer"
+        status:
+          description: "Status of the order"
+          type: "string"
+          enum:
+          - "pending"
+          - "processing"
+          - "shipped"
+          - "delivered"
+          - "cancelled"
+    Shipment:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Shipment"
+      type: "object"
+      required:
+      - "shipmentId"
+      - "status"
+      - "items"
+      properties:
+        shipment:
+          description: "Identifier of the shipment"
+          type: "string"
+        items:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              quantity:
+                description: "Quantity of the item available in inventory"
+                type: "integer"
+                minimum: 0
+              price:
+                description: "Price of the item"
+                type: "number"
+                minimum: 0
+              name:
+                description: "Name of the item"
+                type: "string"
+              description:
+                description: "Description of the item"
+                type: "string"
+              id:
+                description: "Unique identifier for the item"
+                type: "string"
+              category:
+                description: "Category of the item"
+                type: "string"
+            required:
+            - "id"
+            - "name"
+            - "quantity"
+            - "price"
+        status:
+          description: "Status of the shipment"
+          type: "string"
+  messages:
+    ShipmentEvent:
+      payload:
+        $ref: "#/components/schemas/Shipment"
+      description: "Shipment event"
+      schemaFormat: "application/vnd.aai.asyncapi+json;version=2.0.0"
+      contentType: "application/json"
+    OrderShipRequest:
+      payload:
+        $ref: "#/components/schemas/Order"
+      description: "Request to ship the order"
+      schemaFormat: "application/vnd.aai.asyncapi+json;version=2.0.0"
+      contentType: "application/json"
+channels:
+  dsb/shipment/{shipmentId}/{importShipmentStatus}:
+    subscribe:
+      message:
+        $ref: "#/components/messages/ShipmentEvent"
+    parameters:
+      shipmentId:
+        schema:
+          type: "string"
+      importShipmentStatus:
+        schema:
+          type: "string"
+          enum:
+          - "INITIATED"
+          - "SHIPPED"
+          - "CANCELLED"
+          - "DELIVERED"
+  dsb/order/ship/request/{orderId}:
+    publish:
+      bindings:
+        solace:
+          destinations:
+          - destinationType: "queue"
+            queue:
+              name: "CODEGEN.DEMO.SHIPPING"
+              topicSubscriptions:
+              - "dsb/order/ship/request/*"
+          bindingVersion: "0.3.0"
+      message:
+        $ref: "#/components/messages/OrderShipRequest"
+    parameters:
+      orderId:
+        schema:
+          type: "string"
+asyncapi: "2.5.0"
+info:
+  title: "ShippingService"
+  version: "0.1.0"

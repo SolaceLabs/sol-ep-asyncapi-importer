@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+          <groupId>com.solace.ep.asyncapi</groupId>
+          <artifactId>sol-ep-importer-project</artifactId>
+          <version>0.1.0</version>
+    </parent>
+
+    <groupId>com.solace.ep.asyncapi</groupId>
+    <artifactId>asyncapi-importer-cli</artifactId>
+    <version>0.1.0</version>
+
+    <name>AsyncApi Importer CLI</name>
+    <description>
+        Provides a CLI tool to import AsyncApi into Solace Event Portal
+    </description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+    <developers>
+        <developer>
+            <name>Dennis Brinley</name>
+            <email>Dennis.Brinley@Solace.com</email>
+            <organization>Solace</organization>
+            <organizationUrl>https://solace.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <dependencies>
+    
+        <dependency>
+            <groupId>com.solace.ep.asyncapi</groupId>
+            <artifactId>asyncapi-importer-core</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.23.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.23.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>2.23.1</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                    <id>copy-config</id>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>copy-resources</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>${basedir}/target/src/main/resources</outputDirectory>
+                        <resources>
+                            <resource>
+                                <directory>src/main/resources</directory>
+                                <includes>
+                                    <include>*.properties</include>
+                                    <include>*.yaml</include>
+                                </includes>
+                            </resource>
+                        </resources>
+                    </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <!-- <version>3.2.1</version> -->
+            <executions>
+                <execution>
+                <phase>package</phase>
+                <goals>
+                    <goal>shade</goal>
+                </goals>
+                <configuration>
+                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                    <!-- <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName> -->
+                    <finalName>asyncapi-import</finalName>
+                    <transformers>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <mainClass>com.solace.ep.asyncapi.cli.AsyncApiImport</mainClass>
+                    </transformer>
+                    </transformers>
+                </configuration>
+                </execution>
+            </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
