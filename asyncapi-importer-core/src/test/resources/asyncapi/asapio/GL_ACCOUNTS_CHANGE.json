@@ -1,0 +1,96 @@
+{
+	"asyncapi": "2.6.0",
+	"info": {
+		"title": "GL_ACCOUNTS_CHANGE",
+		"version": "1.0.0",
+		"x-origin": {
+			"vendor": "asapio"
+		}
+	},
+	"defaultContentType": "application/json",
+	"channels": {
+		"sap.com/chartofaccounts/change/V1/{cCode}/{glAccount}": {
+			"x-ep-event-name": "GL_ACCOUNTS_CHANGE",
+			"parameters": {
+				"cCode": {
+					"schema": {
+						"type": "string"
+					}
+				},
+				"glAccount": {
+					"schema": {
+						"type": "string"
+					}
+				}
+			},
+			"subscribe": {
+				"message": {
+					"name": "/SAP_AEM/FI_GL_ACCOUNTS-MEDIUM",
+					"payload": {
+						"$schema": "http://json-schema.org/draft-07/schema",
+						"title": "/SAP_AEM/FI_GL_ACCOUNTS",
+						"description": "Chart of Accounts",
+						"type": "object",
+						"properties": {
+							"accountHeader": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"chartOfAccounts": {
+											"type": "string",
+											"maxLength": 4
+										},
+										"accountNumber": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"creator": {
+											"type": "string",
+											"maxLength": 12
+										},
+										"companyCodeData": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"companyCode": {
+														"type": "string",
+														"maxLength": 4
+													},
+													"financialBudgetItem": {
+														"type": "string",
+														"maxLength": 3
+													},
+													"fieldStatusGroup": {
+														"type": "string",
+														"maxLength": 4
+													},
+													"taxCode": {
+														"type": "string",
+														"maxLength": 2
+													},
+													"currency": {
+														"type": "string",
+														"maxLength": 5
+													}
+												},
+												"required": [
+													"companyCode"
+												]
+											}
+										}
+									},
+									"required": [
+										"chartOfAccounts",
+										"accountNumber"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -55,6 +55,15 @@ public class AsyncApiMessage {
      * @return
      */
     public String getMessageName() {
+        // attempt to find embedded message name if the constructed name is null
+        if (this.messageName == null) {
+            try {
+                final String msgName = asyncApiMessage.get("name").getAsString();
+                if (msgName != null && ! msgName.isBlank()) {
+                    this.messageName = msgName;
+                }
+            } catch (Exception exc) {  }
+        }
         return this.messageName;
     }
 
@@ -205,7 +214,25 @@ public class AsyncApiMessage {
 
     public String getSchemaName() {
         final String payloadRef = this.getPayloadRef();
-        final String schemaName = payloadRef != null ? AsyncApiUtils.getLastElementFromRefString(payloadRef) : null;
+        String schemaName = null;
+        if (payloadRef != null) {
+            schemaName = AsyncApiUtils.getLastElementFromRefString(payloadRef);
+        } else {
+            try {
+                JsonObject payloadObject = asyncApiMessage.getAsJsonObject( AsyncApiFieldConstants.API_PAYLOAD );
+                final String titleName = payloadObject.get("title").getAsString();
+                if (titleName != null && ! titleName.isEmpty()) {
+                    schemaName = titleName;
+                } else { 
+                    final String schemaIdField = payloadObject.getAsJsonObject("$id").getAsString();
+                    if (schemaIdField != null && !schemaIdField.isEmpty()) {
+                        schemaName = schemaIdField;
+                    }
+                }
+            } catch (Exception exc) {
+                return null;
+            }
+        }
         return schemaName;
     }
 

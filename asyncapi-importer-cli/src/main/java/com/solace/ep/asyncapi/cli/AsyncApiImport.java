@@ -34,20 +34,22 @@ import com.solace.ep.asyncapi.importer.AsyncApiImporter;
 
 public class AsyncApiImport {
 
-    private static final String CMD_LINE_SYNTAX = "asyncapi-import -a ASYNCAPI_TO_IMPORT -d APP_DOMAIN -t EP_TOKEN [-u BASE_URL] [-m | -i | -p]";
+    private static final String CMD_LINE_SYNTAX = "asyncapi-import -a ASYNCAPI_TO_IMPORT -d APP_DOMAIN -t EP_TOKEN [-u BASE_URL] [-m | -i | -p] [-e] [-z]\n";
 
     public static void main(String[] args) 
     {
         // Define Options
-        Option opAsyncapi = new Option("a", "asyncapi", true, "AsyncApi Spec File to import");
-        Option opAppDomain = new Option("d", "app-domain", true, "Target Application Domain in Event Portal for Import");
-        Option opEpToken = new Option("t", "ep-token", true, "Event Portal bearer token");
-        Option opBaseUrl = new Option("u", "ep-base-url", true, "Base URL to call Event Portal\nUse to call Solace cloud API\noutside of US/CAN region");
-        Option opHelp = new Option("h", "help", false, "Display Help");
+        Option opAsyncapi = new Option("a", "asyncapi", true, "AsyncApi Spec File to import\n");
+        Option opAppDomain = new Option("d", "app-domain", true, "Target Application Domain in Event Portal\n");
+        Option opEpToken = new Option("t", "ep-token", true, "Event Portal bearer token\n");
+        Option opBaseUrl = new Option("u", "ep-base-url", true, "Over-ride Base URL to call Event Portal\nUse to call Solace Cloud API outside\n of US/CAN region\n");
+        Option opHelp = new Option("h", "help", false, "Display Help\n");
+        Option opNoCascadeUpdate = new Option("z", "no-cascade", false, "Disable cascade update of objects\nSee documentation for more info\n");
+        Option opImportEventsOnly = new Option("e", "events-only", false, "Import Events and Schemas only\nDo not import Applications");
 
-        Option opVersionMajor = new Option("m", "version-major", false, "Increment MAJOR version of SemVer for new objects (DEFAULT)");
-        Option opVersionMinor = new Option("i", "version-minor", false, "Increment MINOR version of SemVer for new objects");
-        Option opVersionPatch = new Option("p", "version-patch", false, "Increment PATCH version of SemVer for new objects");
+        Option opVersionMajor = new Option("m", "version-major", false, "Increment MAJOR version of SemVer (DEFAULT)\n");
+        Option opVersionMinor = new Option("i", "version-minor", false, "Increment MINOR version of SemVer\n");
+        Option opVersionPatch = new Option("p", "version-patch", false, "Increment PATCH version of SemVer\n");
 
         opAsyncapi.setRequired(true);
         opAppDomain.setRequired(true);
@@ -63,7 +65,9 @@ public class AsyncApiImport {
             .addOption(opEpToken)
             .addOption(opBaseUrl)
             .addOptionGroup(opGroupVersion)
-            .addOption(opHelp);
+            .addOption(opHelp)
+            .addOption(opNoCascadeUpdate)
+            .addOption(opImportEventsOnly);
 
         // Collect Option values
         String appDomainName;
@@ -71,6 +75,8 @@ public class AsyncApiImport {
         String epToken;
         String epBaseUrl;
         String versionStrategy;
+        boolean disableCascadeUpdate;
+        boolean disableApplicationImport;
         
         // Parse out options
         try {
@@ -98,6 +104,8 @@ public class AsyncApiImport {
             } else {
                 versionStrategy = null;
             }
+            disableCascadeUpdate = commandLine.hasOption("z");
+            disableApplicationImport = commandLine.hasOption("e");
         } catch (ParseException parseExc) {
             System.out.println("Error parsing out options: " + parseExc.getLocalizedMessage() + "\n");
             displayHelp(options);
@@ -115,7 +123,15 @@ public class AsyncApiImport {
         try {
             final String asyncApiContent = getFileAsString(asyncapiSpecFile);
 
-            AsyncApiImporter.execImportOperation(appDomainName, epToken, asyncApiContent, epBaseUrl, versionStrategy);
+            AsyncApiImporter.execImportOperation(
+                appDomainName, 
+                epToken, 
+                asyncApiContent, 
+                epBaseUrl, 
+                versionStrategy, 
+                disableCascadeUpdate,
+                disableApplicationImport
+            );
             
             System.out.println(
                 "\n####  ASYNCAPI SPEC IMPORT COMPLETE  ####\n"

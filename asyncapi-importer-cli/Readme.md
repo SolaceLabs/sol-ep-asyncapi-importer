@@ -49,9 +49,13 @@ java -jar asyncapi-import.jar -a **ASYNCAPI_TO_IMPORT** -d **APP_DOMAIN** -t **E
 |`-m`|`--version-major`|Increment Major Version|No|`-m` / `--version-major`|
 |`-i`|`--version-minor`|Increment Minor Version|No|`-m` / `--version-major`|
 |`-p`|`--version-patch`|Increment Patch Version|No|`-m` / `--version-major`|
+|`-e`|`--events-only`|Import Events, Enums, and<br>Schemas. Skip Applications|No|N/A|
+|`-z`|`--no-cascade`|Disable cascade update of objects<br>Schemas. Skip Applications|No|N/A|
 |`-h`|`--help`|Display Help|No|N/A|
 
-**Note: Version options are mutually exclusive. Incremented versions are new SemVer versions when new object versions are created as a result of importing.**
+> **Note:** Version options are mutually exclusive. Incremented versions are new SemVer versions when new object versions are created as a result of importing.
+
+> **Note:** If **--events-only** option is specified, applications may still be cascade updated if an associated event has a new version created.
 
 ## Outstanding
 - Check the EP token access before being import operation

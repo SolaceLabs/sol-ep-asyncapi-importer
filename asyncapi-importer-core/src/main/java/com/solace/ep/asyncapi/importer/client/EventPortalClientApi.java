@@ -894,6 +894,13 @@ public class EventPortalClientApi {
         }
     }
 
+    /**
+     * Update the declaredPublishedEvents associated with an application version
+     * @param appVersionId
+     * @param declaredPublishedEvents
+     * @return The update ApplicationVersion object
+     * @throws Exception
+     */
     public ApplicationVersion updateApplicationVersion(
         final String appVersionId,
         final List<String> declaredPublishedEvents

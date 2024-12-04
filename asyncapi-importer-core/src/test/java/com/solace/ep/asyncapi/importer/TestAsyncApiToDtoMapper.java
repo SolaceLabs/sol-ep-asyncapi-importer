@@ -18,6 +18,7 @@
 package com.solace.ep.asyncapi.importer;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,6 +46,24 @@ public class TestAsyncApiToDtoMapper {
             assertTrue(resultSet.getMapEnums().size() > 0 );
 
         } catch (Exception exc) {
+            exc.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testMapAsapioSalesOrder() {
+
+        final String ASYNCAPI_ASAPIO_SALES_ORDER = "src/test/resources/asyncapi/asapio/sales-order.json";
+
+        try {
+            AsyncApiAccessor asyncApiAccessor = new AsyncApiAccessor( AsyncApiAccessor.parseAsyncApi(getAsyncApiFile(ASYNCAPI_ASAPIO_SALES_ORDER)) );
+            AsyncApiToDto mapper = new AsyncApiToDto(asyncApiAccessor, "fictionalId", "FictionalDomain" );
+            DtoResultSet resultSet = mapper.mapAsyncApiToDto();
+
+            assertTrue(resultSet.getMapEnums().size() > 0 );
+
+        } catch (Exception exc) {
+            fail(exc.getLocalizedMessage());
             exc.printStackTrace();
         }
     }

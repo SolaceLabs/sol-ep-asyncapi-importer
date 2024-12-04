@@ -1,0 +1,195 @@
+{
+	"asyncapi": "2.6.0",
+	"info": {
+		"title": "SALESORDER_CHANGE",
+		"version": "1.0.0",
+		"x-origin": {
+			"vendor": "asapio"
+		}
+	},
+	"defaultContentType": "application/json",
+	"channels": {
+		"sap.com/salesorder/change/V1/{salesOrg}/{channel}/{division}/{customerId}": {
+			"x-ep-event-name": "SALESORDER_CHANGE",
+			"parameters": {
+				"salesOrg": {
+					"schema": {
+						"type": "string",
+						"maxLength": 4
+					}
+				},
+				"channel": {
+					"schema": {
+						"type": "string",
+						"maxLength": 2
+					}
+				},
+				"division": {
+					"schema": {
+						"type": "string",
+						"maxLength": 2
+					}
+				},
+				"customerId": {
+					"schema": {
+						"type": "string",
+						"maxLength": 10
+					}
+				}
+			},
+			"subscribe": {
+				"message": {
+					"name": "/SAP_AEM/SD_SALESORDER-4: WORKSHOP",
+					"payload": {
+						"$schema": "http://json-schema.org/draft-07/schema",
+						"title": "/SAP_AEM/SD_SALESORDER",
+						"description": "Payload for Workshop",
+						"type": "object",
+						"properties": {
+							"orderHeader": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"salesOrderNumber": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"creator": {
+											"type": "string",
+											"maxLength": 12
+										},
+										"date": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"salesType": {
+											"type": "string",
+											"maxLength": 1
+										},
+										"ordertype": {
+											"type": "string",
+											"maxLength": 4
+										},
+										"salesOrg": {
+											"type": "string",
+											"maxLength": 4
+										},
+										"distributionChannel": {
+											"type": "string",
+											"maxLength": 2
+										},
+										"division": {
+											"type": "string",
+											"maxLength": 2
+										},
+										"creat": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"ERZET": {
+											"type": "string",
+											"maxLength": 8
+										},
+										"customer": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"customerId": {
+														"type": "string",
+														"maxLength": 10
+													},
+													"customerName": {
+														"type": "string",
+														"maxLength": 35
+													},
+													"zipCode": {
+														"type": "string",
+														"maxLength": 10
+													},
+													"street": {
+														"type": "string",
+														"maxLength": 35
+													},
+													"phone": {
+														"type": "string",
+														"maxLength": 16
+													},
+													"country": {
+														"type": "string",
+														"maxLength": 3
+													},
+													"city": {
+														"type": "string",
+														"maxLength": 35
+													}
+												},
+												"required": [
+													"customerId"
+												]
+											}
+										},
+										"orderItem": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"item": {
+														"type": "string",
+														"maxLength": 6
+													},
+													"material": {
+														"type": "string",
+														"maxLength": 18
+													},
+													"materialType": {
+														"type": "string",
+														"maxLength": 9
+													},
+													"itemType": {
+														"type": "string",
+														"maxLength": 1
+													},
+													"orderSchedule": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"scheduleNumber": {
+																	"type": "string",
+																	"maxLength": 4
+																},
+																"quantity": {
+																	"type": "number",
+																	"maximum": 9999999999.999
+																},
+																"uom": {
+																	"type": "string",
+																	"maxLength": 3
+																}
+															},
+															"required": [
+																"scheduleNumber"
+															]
+														}
+													}
+												},
+												"required": [
+													"item"
+												]
+											}
+										}
+									},
+									"required": [
+										"salesOrderNumber"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

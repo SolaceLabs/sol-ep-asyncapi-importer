@@ -1,0 +1,143 @@
+{
+	"asyncapi": "2.6.0",
+	"info": {
+		"title": "MATERIAL_CHANGE",
+		"version": "1.0.0",
+		"x-origin": {
+			"vendor": "asapio"
+		}
+	},
+	"defaultContentType": "application/json",
+	"channels": {
+		"sap.com/material/change/V1/{materialClass}/{industrySector}/{materialtype}/{materialNumber}/{maintenanceStatusGroup}": {
+			"x-ep-event-name": "MATERIAL_CHANGE",
+			"parameters": {
+				"materialClass": {
+					"schema": {
+						"type": "string",
+						"maxLength": 9
+					}
+				},
+				"industrySector": {
+					"schema": {
+						"type": "string",
+						"maxLength": 1
+					}
+				},
+				"materialtype": {
+					"schema": {
+						"type": "string",
+						"maxLength": 4
+					}
+				},
+				"materialNumber": {
+					"schema": {
+						"type": "string",
+						"maxLength": 18
+					}
+				},
+				"maintenanceStatusGroup": {
+					"schema": {
+						"type": "string",
+						"maxLength": 15
+					}
+				}
+			},
+			"subscribe": {
+				"message": {
+					"name": "/SAP_AEM/MM_MATERIAL-1: SMALL",
+					"payload": {
+						"$schema": "http://json-schema.org/draft-07/schema",
+						"title": "/SAP_AEM/MM_MATERIAL",
+						"description": "Material, Additional Units",
+						"type": "object",
+						"properties": {
+							"material": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"materialNumber": {
+											"type": "string",
+											"maxLength": 18
+										},
+										"creationDate": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"creatorUser": {
+											"type": "string",
+											"maxLength": 12
+										},
+										"lastChange": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"changerUser": {
+											"type": "string",
+											"maxLength": 12
+										},
+										"maintenanceStatusGroup": {
+											"type": "string",
+											"maxLength": 15
+										},
+										"maintenanceStatusMaterial": {
+											"type": "string",
+											"maxLength": 15
+										},
+										"deletionIndicator": {
+											"type": "string",
+											"maxLength": 1
+										},
+										"materialType": {
+											"type": "string",
+											"maxLength": 4
+										},
+										"industrySector": {
+											"type": "string",
+											"maxLength": 1
+										},
+										"materialClass": {
+											"type": "string",
+											"maxLength": 9
+										},
+										"baseUnit": {
+											"type": "string",
+											"maxLength": 3
+										},
+										"BISMT": {
+											"type": "string",
+											"maxLength": 18
+										},
+										"ZEINR": {
+											"type": "string",
+											"maxLength": 22
+										},
+										"MARC": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"WERKS": {
+														"type": "string",
+														"maxLength": 4
+													}
+												},
+												"required": [
+													"WERKS"
+												]
+											}
+										}
+									},
+									"required": [
+										"materialNumber"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

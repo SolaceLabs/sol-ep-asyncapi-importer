@@ -146,15 +146,17 @@ public class AsyncApiToDto {
         // There should only be one message in this list
         for ( AsyncApiMessage msg : channel.getSubscribeOpMessages() ) {
             // final String schemaFormat = msg.getSchemaFormat();
-            final String contentType = msg.getContentType();
+            final String contentType = ( msg.getContentType() != null ? msg.getContentType() : asyncApiAccessor.getDefaultContentType() );
             final String payload = msg.getPayloadAsString();
             final String schemaName = msg.getSchemaName();
             final String messageName = msg.getMessageName();
-
+            // channel.getEventPortalEventNameFromChannel() added for ASAPIO imports
+            final String eventName = channel.getEventPortalEventNameFromChannel() != null ? channel.getEventPortalEventNameFromChannel() : messageName;
+            
             // Map the schema, return the object representing the schema version
             schemaVersionInThisChannel = mapSchemaDto(schemaName, contentType, payload);
 
-            mapEventDto(channelName, messageName, schemaVersionInThisChannel, enumVersionsInThisChannel);
+            mapEventDto(channelName, eventName, schemaVersionInThisChannel, enumVersionsInThisChannel);
         }
     }
 

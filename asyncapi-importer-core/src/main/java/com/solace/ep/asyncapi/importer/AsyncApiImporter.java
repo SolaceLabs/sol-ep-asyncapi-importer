@@ -37,7 +37,46 @@ public class AsyncApiImporter {
 
     private EpNewVersionStrategy versionStrategy;
 
+    private boolean disableCascadeUpdate;
+
+    private boolean disableApplicationImport;
+
     private String applicationDomainId;
+
+    /**
+     * @param applicationDomainName - Name of Application Domain in Event Portal where objects represented in the AsyncApi spec will be imported.
+     * @param eventPortalBearerToken - Event Portal Bearer Token, must have read and write privileges
+     * @param asyncApiSpecToImport - String representation of full asyncapi spec to import
+     * @param eventPortalBaseUrl - Can be NULL, will use default URL for US/Canada
+     * @param newVersionStrategy - Used to indicate how semantic versions for created object are incremented.
+     * @param disableCascadeUpdate - Set to TRUE to prevent new versions of objects from being created by cascade update (See Documentation)
+     * @param disableApplicationImport - Do not import an application with the AsyncApi spec, Events, schemas, and enums only
+     * Allowed values are MAJOR, MINOR, and PATCH.
+     * Can be NULL, will default increment MAJOR version;
+     * @throws Exception
+     */
+    public AsyncApiImporter(
+        final String applicationDomainName,
+        final String eventPortalBearerToken,
+        final String asyncApiSpecToImport,
+        final String eventPortalBaseUrl,
+        final String newVersionStrategy,
+        final boolean disableCascadeUpdate,
+        final boolean disableApplicationImport
+    ) throws Exception
+    {
+        this.applicationDomainName = applicationDomainName;
+        this.eventPortalBearerToken = eventPortalBearerToken;
+        this.asyncApiSpecToImport = asyncApiSpecToImport;
+        this.eventPortalBaseUrl = eventPortalBaseUrl;
+        if (newVersionStrategy != null && !newVersionStrategy.isEmpty()) {
+            this.versionStrategy = EpNewVersionStrategy.valueOf(newVersionStrategy);
+        } else {
+            this.versionStrategy = EpNewVersionStrategy.MAJOR;
+        }
+        this.disableCascadeUpdate = disableCascadeUpdate;
+        this.disableApplicationImport = disableApplicationImport;
+    }
 
     /**
      * @param applicationDomainName - Name of Application Domain in Event Portal where objects represented in the AsyncApi spec will be imported.
@@ -57,15 +96,7 @@ public class AsyncApiImporter {
         final String newVersionStrategy
     ) throws Exception
     {
-        this.applicationDomainName = applicationDomainName;
-        this.eventPortalBearerToken = eventPortalBearerToken;
-        this.asyncApiSpecToImport = asyncApiSpecToImport;
-        this.eventPortalBaseUrl = eventPortalBaseUrl;
-        if (newVersionStrategy != null && !newVersionStrategy.isEmpty()) {
-            this.versionStrategy = EpNewVersionStrategy.valueOf(newVersionStrategy);
-        } else {
-            this.versionStrategy = EpNewVersionStrategy.MAJOR;
-        }
+        this(applicationDomainName, eventPortalBearerToken, asyncApiSpecToImport, eventPortalBaseUrl, newVersionStrategy, false, false);
     }
 
     /**
@@ -75,6 +106,41 @@ public class AsyncApiImporter {
      * @param asyncApiSpecToImport - String representation of full asyncapi spec to import
      * @param eventPortalBaseUrl - Can be NULL, will use default URL for US/Canada
      * @param newVersionStrategy - Used to indicate how semantic versions for created object are incremented.
+     * @param disableCascadeUpdate - Set to TRUE to prevent new versions of objects from being created by cascade update (See Documentation)
+     * @param disableApplicationImport - Do not import an application with the AsyncApi spec, Events, schemas, and enums only
+     * Allowed values are MAJOR, MINOR, and PATCH.
+     * Can be NULL, will default increment MAJOR version;
+     * @throws Exception
+     */
+    public static void execImportOperation(
+        final String applicationDomainName,
+        final String eventPortalBearerToken,
+        final String asyncApiSpecToImport,
+        final String eventPortalBaseUrl,
+        final String newVersionStrategy,
+        final boolean disableCascadeUpdate,
+        final boolean disableApplicationImport
+    ) throws Exception
+    {
+        final AsyncApiImporter importer = new AsyncApiImporter(
+            applicationDomainName, 
+            eventPortalBearerToken, 
+            asyncApiSpecToImport, 
+            eventPortalBaseUrl, 
+            newVersionStrategy, 
+            disableCascadeUpdate,
+            disableApplicationImport);
+        importer.execImportOperation();
+    }
+
+    /**
+     * Statically invoke AsyncApi import operation
+     * @param applicationDomainName - Name of Application Domain in Event Portal where objects represented in the AsyncApi spec will be imported.
+     * @param eventPortalBearerToken - Event Portal Bearer Token, must have read and write privileges
+     * @param asyncApiSpecToImport - String representation of full asyncapi spec to import
+     * @param eventPortalBaseUrl - Can be NULL, will use default URL for US/Canada
+     * @param newVersionStrategy - Used to indicate how semantic versions for created object are incremented.
+     * @param disableCascadeUpdate - Set to TRUE to prevent new versions of objects from being created by cascade update (See Documentation)
      * Allowed values are MAJOR, MINOR, and PATCH.
      * Can be NULL, will default increment MAJOR version;
      * @throws Exception
@@ -129,12 +195,18 @@ public class AsyncApiImporter {
 
         importOperator.importEvents();
 
-        importOperator.matchEpApplications();
+        if (! disableApplicationImport) 
+        {
+            importOperator.matchEpApplications();
 
-        importOperator.importApplications();
+            importOperator.importApplications();
+        }
 
-        importOperator.cascadeUpdateEvents();
+        if (! disableCascadeUpdate)
+        {
+            importOperator.cascadeUpdateEvents();
 
-        importOperator.cascadeUpdateApplications();
+            importOperator.cascadeUpdateApplications();
+        }
     }
 }

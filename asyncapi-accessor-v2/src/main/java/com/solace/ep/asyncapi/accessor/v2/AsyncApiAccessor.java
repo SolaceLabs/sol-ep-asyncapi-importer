@@ -207,4 +207,13 @@ public class AsyncApiAccessor {
         return messages;
     }
 
+    public String getDefaultContentType() {
+        try {
+            return this.root.get("defaultContentType").getAsString();
+        } catch (Exception exc) {
+            log.debug("defaultContentType field not found");
+            return null;
+        }
+    }
+
 }

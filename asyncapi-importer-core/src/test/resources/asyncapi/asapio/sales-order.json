@@ -1,0 +1,232 @@
+{
+	"asyncapi": "2.6.0",
+	"info": {
+		"title": "SALESORDER",
+		"version": "1.0.0",
+		"x-origin": {
+			"vendor": "asapio"
+		}
+	},
+	"defaultContentType": "application/json",
+	"channels": {
+		"sap_demo/SalesOrder/change/V1/{salesOrg}/{channel}/{division}/{customerId}": {
+			"x-ep-event-name": "SALES_ORDER_CHANGE",
+			"parameters": {
+				"salesOrg": {
+					"schema": {
+						"type": "string",
+						"maxLength": 4
+					}
+				},
+				"channel": {
+					"schema": {
+						"type": "string",
+						"maxLength": 2
+					}
+				},
+				"division": {
+					"schema": {
+						"type": "string",
+						"maxLength": 2
+					}
+				},
+				"customerId": {
+					"schema": {
+						"type": "string",
+						"maxLength": 10
+					}
+				}
+			},
+			"subscribe": {
+				"message": {
+					"name": "/SOLACE/SALES_ORDER-1",
+					"payload": {
+						"$schema": "http://json-schema.org/draft-07/schema",
+						"title": "/SOLACE/SALES_ORDER",
+						"description": "Sales Order Changes",
+						"type": "object",
+						"properties": {
+							"VBAK": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"CLIENT": {
+											"type": "string",
+											"maxLength": 3
+										},
+										"VBELN": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"ANGDT": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"BNDDT": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"AUDAT": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"VBTYP": {
+											"type": "string",
+											"maxLength": 1
+										},
+										"AUART": {
+											"type": "string",
+											"maxLength": 4
+										},
+										"AUGRU": {
+											"type": "string",
+											"maxLength": 3
+										},
+										"VKORG": {
+											"type": "string",
+											"maxLength": 4
+										},
+										"VTWEG": {
+											"type": "string",
+											"maxLength": 2
+										},
+										"SPART": {
+											"type": "string",
+											"maxLength": 2
+										},
+										"KNA1": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"KUNNR": {
+														"type": "string",
+														"maxLength": 10
+													},
+													"NAME1": {
+														"type": "string",
+														"maxLength": 35
+													},
+													"ORT01": {
+														"type": "string",
+														"maxLength": 35
+													},
+													"REGIO": {
+														"type": "string",
+														"maxLength": 3
+													},
+													"STRAS": {
+														"type": "string",
+														"maxLength": 35
+													},
+													"TELF1": {
+														"type": "string",
+														"maxLength": 16
+													},
+													"TELFX": {
+														"type": "string",
+														"maxLength": 31
+													}
+												},
+												"required": [
+													"KUNNR"
+												]
+											}
+										},
+										"VBAP": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"POSNR": {
+														"type": "string",
+														"maxLength": 6
+													},
+													"MATNR": {
+														"type": "string",
+														"maxLength": 18
+													},
+													"MATKL": {
+														"type": "string",
+														"maxLength": 9
+													},
+													"POSAR": {
+														"type": "string",
+														"maxLength": 1
+													},
+													"VBEP": {
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"ETENR": {
+																	"type": "string",
+																	"maxLength": 4
+																},
+																"EDATU": {
+																	"type": "string",
+																	"maxLength": 10
+																},
+																"EZEIT": {
+																	"type": "string",
+																	"maxLength": 8
+																},
+																"WMENG": {
+																	"type": "number",
+																	"maximum": 9999999999.999
+																},
+																"BMENG": {
+																	"type": "number",
+																	"maximum": 9999999999.999
+																},
+																"VRKME": {
+																	"type": "string",
+																	"maxLength": 3
+																},
+																"VBELE": {
+																	"type": "string",
+																	"maxLength": 10
+																},
+																"POSNE": {
+																	"type": "string",
+																	"maxLength": 6
+																},
+																"BANFN": {
+																	"type": "string",
+																	"maxLength": 10
+																},
+																"BSART": {
+																	"type": "string",
+																	"maxLength": 4
+																},
+																"BSTYP": {
+																	"type": "string",
+																	"maxLength": 1
+																}
+															},
+															"required": [
+																"ETENR"
+															]
+														}
+													}
+												},
+												"required": [
+													"POSNR"
+												]
+											}
+										}
+									},
+									"required": [
+										"CLIENT",
+										"VBELN"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

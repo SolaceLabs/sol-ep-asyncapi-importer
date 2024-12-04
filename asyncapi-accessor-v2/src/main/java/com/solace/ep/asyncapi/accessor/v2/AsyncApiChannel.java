@@ -291,4 +291,12 @@ public class AsyncApiChannel {
         }
         return null;
     }
+
+    public String getEventPortalEventNameFromChannel() {
+        try {
+            return this.asyncApiChannel.get(EpFieldConstants.EP_EVENT_NAME).getAsString();
+        } catch (Exception exc) {
+            return null;
+        }
+    }
 }

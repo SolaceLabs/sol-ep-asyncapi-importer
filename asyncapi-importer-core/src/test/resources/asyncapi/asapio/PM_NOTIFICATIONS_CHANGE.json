@@ -1,0 +1,105 @@
+{
+	"asyncapi": "2.6.0",
+	"info": {
+		"title": "PM_NOTIFICATIONS_CHANGE",
+		"version": "1.0.0",
+		"x-origin": {
+			"vendor": "asapio"
+		}
+	},
+	"defaultContentType": "application/json",
+	"channels": {
+		"sap.com/notification/change/V1/{NoteType}/{plant}": {
+			"x-ep-event-name": "PM_NOTIFICATIONS_CHANGE",
+			"parameters": {
+				"NoteType": {
+					"schema": {
+						"type": "string",
+						"maxLength": 2
+					}
+				},
+				"plant": {
+					"schema": {
+						"type": "string",
+						"maxLength": 4
+					}
+				}
+			},
+			"subscribe": {
+				"message": {
+					"name": "/SAP_AEM/PM_NOTIFICATIONS-MEDIUM",
+					"payload": {
+						"$schema": "http://json-schema.org/draft-07/schema",
+						"title": "/SAP_AEM/PM_NOTIFICATIONS",
+						"description": "Notifications, Items",
+						"type": "object",
+						"properties": {
+							"notificationHeader": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"notificationId": {
+											"type": "string",
+											"maxLength": 12
+										},
+										"type": {
+											"type": "string",
+											"maxLength": 2
+										},
+										"creator": {
+											"type": "string",
+											"maxLength": 12
+										},
+										"changer": {
+											"type": "string",
+											"maxLength": 12
+										},
+										"changedate": {
+											"type": "string",
+											"maxLength": 10
+										},
+										"plant": {
+											"type": "string",
+											"maxLength": 4
+										},
+										"notificationItem": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"item": {
+														"type": "string",
+														"maxLength": 4
+													},
+													"defectClass": {
+														"type": "string",
+														"maxLength": 2
+													},
+													"material": {
+														"type": "string",
+														"maxLength": 18
+													},
+													"puchaseOrg": {
+														"type": "string",
+														"maxLength": 4
+													}
+												},
+												"required": [
+													"item"
+												]
+											}
+										}
+									},
+									"required": [
+										"notificationId"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
