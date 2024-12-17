@@ -47,8 +47,8 @@ java -jar asyncapi-import.jar -a **ASYNCAPI_TO_IMPORT** -d **APP_DOMAIN** -t **E
 |`-t`|`--ep-token`|Event Portal Access Token|**Yes**|N/A|
 |`-u`|`--ep-base-url`|Cloud API URL<br>(varies by region)|No|https://api.solace.cloud|
 |`-m`|`--version-major`|Increment Major Version|No|`-m` / `--version-major`|
-|`-i`|`--version-minor`|Increment Minor Version|No|`-m` / `--version-major`|
-|`-p`|`--version-patch`|Increment Patch Version|No|`-m` / `--version-major`|
+|`-i`|`--version-minor`|Increment Minor Version|No|`-i` / `--version-minor`|
+|`-p`|`--version-patch`|Increment Patch Version|No|`-p` / `--version-patch`|
 |`-e`|`--events-only`|Import Events, Enums, and<br>Schemas. Skip Applications|No|N/A|
 |`-z`|`--no-cascade`|Disable cascade update of objects<br>Schemas. Skip Applications|No|N/A|
 |`-h`|`--help`|Display Help|No|N/A|
