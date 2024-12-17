@@ -21,6 +21,11 @@ import java.util.Map;
 
 import lombok.Data;
 
+/**
+ * Format representing import structure into Event Portal
+ * There can be only one Application Domain and one Application + Application Version
+ * represented in the input for import into Event Portal.
+ */
 @Data
 public class DtoResultSet {
     

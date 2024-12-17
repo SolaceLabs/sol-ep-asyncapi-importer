@@ -14,7 +14,7 @@
     <version>0.1.0</version>
     <packaging>jar</packaging>
 
-    <name>AsyncApi Importer</name>
+    <name>AsyncApi Importer Core</name>
     <description>
         The purpose of this module is to provide the core capability
         to import AsyncApi spec files into Event Portal. This core

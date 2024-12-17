@@ -13,3 +13,4 @@ dependency-reduced-pom.xml
 
 ## Test
 asyncapi-importer-core/src/test/resources/config.properties
+temp/

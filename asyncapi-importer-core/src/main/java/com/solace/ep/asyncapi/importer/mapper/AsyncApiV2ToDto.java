@@ -41,8 +41,12 @@ import com.solace.ep.asyncapi.importer.util.EventPortalModelUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Class to handle mapping of AsyncApi v2 to the internal DTO format for import
+ * into Event Portal.
+ */
 @Slf4j
-public class AsyncApiToDto {
+public class AsyncApiV2ToDto {
     
     private AsyncApiAccessor asyncApiAccessor;
 
@@ -60,7 +64,7 @@ public class AsyncApiToDto {
 
     private Map<String, ApplicationDto> mapApplications = new HashMap<>();
 
-    public AsyncApiToDto( 
+    public AsyncApiV2ToDto( 
         final AsyncApiAccessor asyncApiAccessor, 
         final String applicationDomainId,
         final String applicationDomainName ) 

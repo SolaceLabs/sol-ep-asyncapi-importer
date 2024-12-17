@@ -15,6 +15,13 @@
  * limitations under the License.
  */
 
+/**
+ * This class is used to configure the connection to Event Portal for most
+ * tests. 
+ * Configure src/test/resources/config.properties with
+ * - EP Token
+ * - Test Application Domain (objects will be created and updated)
+ */
 package com.solace.ep.asyncapi.importer;
 
 import java.io.IOException;

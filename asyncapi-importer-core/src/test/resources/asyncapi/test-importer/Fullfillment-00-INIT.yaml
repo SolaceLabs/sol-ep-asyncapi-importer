@@ -1,0 +1,252 @@
+---
+components:
+  schemas:
+    Invoice:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Invoice"
+      type: "object"
+      properties:
+        id:
+          description: "Invoice Identifier"
+          type: "string"
+        orderNumber:
+          description: "Associated Order Number"
+          type: "string"
+        amount:
+          description: "Unique identifier for the flight"
+          type: "number"
+          minimum: 0
+        invoice_date:
+          format: "date-time"
+          description: "Date and time when the invoice was created"
+          type: "string"
+      required:
+      - "id"
+      - "amount"
+      - "invoice_date"
+    Inventory:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Inventory"
+      type: "object"
+      properties:
+        items:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              quantity:
+                description: "Quantity of the item available in inventory"
+                type: "integer"
+                minimum: 0
+              price:
+                description: "Price of the item"
+                type: "number"
+                minimum: 0
+              name:
+                description: "Name of the item"
+                type: "string"
+              description:
+                description: "Description of the item"
+                type: "string"
+              id:
+                description: "Unique identifier for the item"
+                type: "string"
+              category:
+                description: "Category of the item"
+                type: "string"
+              added_field1:
+                description: "Added Field 1"
+                type: "string"
+            required:
+            - "id"
+            - "name"
+            - "quantity"
+            - "price"
+      required:
+      - "items"
+    Customer:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Customer"
+      type: "object"
+      properties:
+        address:
+          type: "object"
+          properties:
+            country:
+              description: "Country"
+              type: "string"
+            city:
+              description: "City"
+              type: "string"
+            street:
+              description: "Street address"
+              type: "string"
+            state:
+              description: "State or province"
+              type: "string"
+            postal_code:
+              description: "Postal or ZIP code"
+              type: "string"
+          required:
+          - "street"
+          - "city"
+          - "country"
+        phone:
+          pattern: "^\\+?[0-9]{1,3}-?[0-9]{3,}$"
+          description: "Phone number of the customer"
+          type: "string"
+        name:
+          description: "Name of the customer"
+          type: "string"
+        id:
+          description: "Unique identifier for the customer"
+          type: "string"
+        email:
+          format: "email"
+          description: "Email address of the customer"
+          type: "string"
+      required:
+      - "id"
+      - "name"
+      - "email"
+      - "address"
+  messages:
+    InvoiceCreated:
+      payload:
+        $ref: "#/components/schemas/Invoice"
+      description: "Invoice Created Event"
+      schemaFormat: "application/vnd.aai.asyncapi+json;version=2.0.0"
+      contentType: "application/json"
+    InvoiceFinalized:
+      payload:
+        $ref: "#/components/schemas/Invoice"
+      description: "Invoice Finalized Event"
+      schemaFormat: "application/vnd.aai.asyncapi+json;version=2.0.0"
+      contentType: "application/json"
+    CustomerUpdated:
+      payload:
+        $ref: "#/components/schemas/Customer"
+      description: "Customer Updated Event"
+      schemaFormat: "application/vnd.aai.asyncapi+json;version=2.0.0"
+      contentType: "application/json"
+    InventoryHeld:
+      payload:
+        $ref: "#/components/schemas/Inventory"
+      description: "Inventory Held"
+      schemaFormat: "application/vnd.aai.asyncapi+json;version=2.0.0"
+      contentType: "application/json"
+    InventoryPulled:
+      payload:
+        $ref: "#/components/schemas/Inventory"
+      description: "Inventory Pulled Event"
+      schemaFormat: "application/vnd.aai.asyncapi+json;version=2.0.0"
+      contentType: "application/json"
+channels:
+  importer/invoice/created/{invoiceId}/{IMP_invoiceStatus}/{customerId}:
+    subscribe:
+      message:
+        $ref: "#/components/messages/InvoiceCreated"
+    parameters:
+      invoiceId:
+        schema:
+          type: "string"
+      IMP_invoiceStatus:
+        schema:
+          type: "string"
+          enum:
+          - "PAID-IN-FULL"
+          - "PARTIAL-PAYMENT"
+          - "PENDING"
+      customerId:
+        schema:
+          type: "string"
+  importer/invoice/finalized/{invoiceId}/{IMP_invoiceStatus}/{customerId}:
+    subscribe:
+      message:
+        $ref: "#/components/messages/InvoiceFinalized"
+    parameters:
+      invoiceId:
+        schema:
+          type: "string"
+      IMP_invoiceStatus:
+        schema:
+          type: "string"
+          enum:
+          - "PAID-IN-FULL"
+          - "PARTIAL-PAYMENT"
+          - "PENDING"
+      customerId:
+        schema:
+          type: "string"
+  importer/customer/updated/{customerId}/{IMP_regionId}/{IMP_customerStatus}:
+    subscribe:
+      message:
+        $ref: "#/components/messages/CustomerUpdated"
+    parameters:
+      customerId:
+        schema:
+          type: "string"
+      IMP_regionId:
+        schema:
+          type: "string"
+          enum:
+          - "CANADA-EAST"
+          - "CANADA-CENTRAL"
+          - "CANADA-WEST"
+      IMP_customerStatus:
+        schema:
+          type: "string"
+          enum:
+          - "BRONZE"
+          - "SILVER"
+          - "GOLD"
+  importer/inventory/held/{orderId}/{IMP_regionId}/{IMP_inventoryStatus}:
+    subscribe:
+      message:
+        $ref: "#/components/messages/InventoryHeld"
+    parameters:
+      orderId:
+        schema:
+          type: "string"
+      IMP_regionId:
+        schema:
+          type: "string"
+          enum:
+          - "CANADA-EAST"
+          - "CANADA-CENTRAL"
+          - "CANADA-WEST"
+      IMP_inventoryStatus:
+        schema:
+          type: "string"
+          enum:
+          - "AVAILABLE"
+          - "BACKORDER"
+          - "OUT-OF-STOCK"
+          - "ADDED-STATE-1"
+  importer/inventory/pulled/{orderId}/{IMP_regionId}/{IMP_inventoryStatus}:
+    subscribe:
+      message:
+        $ref: "#/components/messages/InventoryPulled"
+    parameters:
+      orderId:
+        schema:
+          type: "string"
+      IMP_regionId:
+        schema:
+          type: "string"
+          enum:
+          - "CANADA-EAST"
+          - "CANADA-CENTRAL"
+          - "CANADA-WEST"
+      IMP_inventoryStatus:
+        schema:
+          type: "string"
+          enum:
+          - "AVAILABLE"
+          - "BACKORDER"
+          - "OUT-OF-STOCK"
+          - "ADDED-STATE-1"
+asyncapi: "2.5.0"
+info:
+  title: "Fulfillment"
+  version: "0.1.0"

@@ -356,14 +356,21 @@ public class EpImportOperator {
             appDto.setBrokerType(epApp.getBrokerType().getValue());
         }
         for (ApplicationVersionDto appVersionDto : appDto.getApplicationVersions()) {
+            if (appVersionDto.isLastestVersionFound()) {
+                appDto.setLastestApplicationSemVer(appVersionDto.getEpApplicationVersion().getVersion());
+                break;
+            }
+        }
+        for (ApplicationVersionDto appVersionDto : appDto.getApplicationVersions()) {
             appVersionDto.setApplicationId(appDto.getId());
-            importApplicationVersion(appVersionDto, appName);
+            importApplicationVersion(appVersionDto, appName, appDto);
         }
     }
 
     private void importApplicationVersion(
         final ApplicationVersionDto appVersionDto,
-        final String appName
+        final String appName,
+        final ApplicationDto appDto
     ) throws Exception
     {
         ApplicationVersion epAppVersion;
@@ -375,8 +382,9 @@ public class EpImportOperator {
                     appVersionDto.getApplicationId(), 
                     appName, 
                     appVersionDto.getDeclaredProducedEventVersionIds(), 
-                    appVersionDto.isLastestVersionFound() ? appVersionDto.getEpApplicationVersion().getVersion() : null
+                    appVersionDto.isLastestVersionFound() ? appDto.getLastestApplicationSemVer() : null
                 );
+                appDto.setLastestApplicationSemVer(epAppVersion.getVersion());
                 log.info("CREATED New Application Version: [{}] v{} in Event Portal", appName, epAppVersion.getVersion());
             } else {
                 epAppVersion = epClient.updateApplicationVersion(
@@ -414,14 +422,21 @@ public class EpImportOperator {
             schemaDto.setShared(schemaObject.getShared());
         }
         for (SchemaVersionDto svDto : schemaDto.getSchemaVersions()) {
+            if (svDto.isLastestVersionFound()) {
+                schemaDto.setLastestSchemaSemVer(svDto.getEpSchemaVersion().getVersion());
+                break;
+            }
+        }
+        for (SchemaVersionDto svDto : schemaDto.getSchemaVersions()) {
             svDto.setSchemaId(schemaDto.getId());
-            importSchemaVersion(svDto, schemaName);
+            importSchemaVersion(svDto, schemaName, schemaDto);
         };
     }
 
     private void importSchemaVersion(
         final SchemaVersionDto svDto,
-        final String schemaName
+        final String schemaName,
+        final SchemaDto schemaDto
     ) throws Exception
     {
         SchemaVersion sv;
@@ -433,8 +448,9 @@ public class EpImportOperator {
                     svDto.getSchemaId(), 
                     svDto.getContent(), 
                     schemaName, 
-                    svDto.isLastestVersionFound() ? svDto.getEpSchemaVersion().getVersion() : null
+                    svDto.isLastestVersionFound() ? schemaDto.getLastestSchemaSemVer() : null
                 );
+                schemaDto.setLastestSchemaSemVer(sv.getVersion());
                 // For cascade object creation
                 // If creating new schemaVersion to update an existing version, then
                 // store the old and new version for retrieval
@@ -476,15 +492,24 @@ public class EpImportOperator {
             enumDto.setMatchFound(true);
             enumDto.setShared(topicAddressEnum.getShared());
         }
+
+        for (EnumVersionDto evDto : enumDto.getEnumVersions()) {
+            if (evDto.isLastestVersionFound()) {
+                enumDto.setLastestEnumSemVer(evDto.getEpEnumVersion().getVersion());
+                break;
+            }
+        }
+
         for (EnumVersionDto evDto : enumDto.getEnumVersions()) {
             evDto.setEnumId(enumDto.getId());
-            importEnumVersion(evDto, enumName);
+            importEnumVersion(evDto, enumName, enumDto);
         }
     }
 
     private void importEnumVersion(
         final EnumVersionDto evDto,
-        final String enumName
+        final String enumName,
+        final EnumDto enumDto
     ) throws Exception
     {
         TopicAddressEnumVersion ev;
@@ -492,12 +517,15 @@ public class EpImportOperator {
             ev = evDto.getEpEnumVersion();
         } else {
             if (!evDto.isLastestVersionFound() || (evDto.isLastestVersionFound() && !evDto.isLatestVersionFoundInDraftState())) {
+
                 ev = epClient.createEnumVersion(
                     evDto.getEnumId(), 
                     evDto.getValuesAsStringList(), 
                     enumName, 
-                    evDto.isLastestVersionFound() ? evDto.getEpEnumVersion().getVersion() : null
+                    evDto.isLastestVersionFound() ? enumDto.getLastestEnumSemVer() : null
                 );
+                enumDto.setLastestEnumSemVer(ev.getVersion());
+
                 // For cascade object creation
                 // If creating new enumVersion to update an existing version, then
                 // store the old and new version for retrieval
@@ -505,6 +533,7 @@ public class EpImportOperator {
                     incrementedEnumVersions.put( evDto.getEpEnumVersion().getId(), ev.getId() );
                 }
                 log.info("CREATED Enum Version: [{}] v{} in Event Portal", enumName, ev.getVersion());
+
             } else {
                 ev = epClient.updateEnumVersion(
                     evDto.getEpEnumVersion().getId(),
@@ -540,14 +569,21 @@ public class EpImportOperator {
             eventDto.setShared(epEvent.getShared());
         }
         for (EventVersionDto eventVersionDto : eventDto.getEventVersions()) {
+            if (eventVersionDto.isLastestVersionFound()) {
+                eventDto.setLatestEventSemVer(eventVersionDto.getEpEventVersion().getVersion());
+                break;
+            }
+        }
+        for (EventVersionDto eventVersionDto : eventDto.getEventVersions()) {
             eventVersionDto.setEventId(eventDto.getId());
-            importEventVersion(eventVersionDto, eventName);
+            importEventVersion(eventVersionDto, eventName, eventDto);
         }
     }
 
     private void importEventVersion(
         final EventVersionDto eventVersionDto,
-        final String eventName
+        final String eventName,
+        final EventDto eventDto
     ) throws Exception
     {
         EventVersion epEventVersion;
@@ -560,8 +596,9 @@ public class EpImportOperator {
                     eventName,
                     eventVersionDto.getSchemaVersionId(),
                     eventVersionDto.getDeliveryDescriptor(),
-                    eventVersionDto.isLastestVersionFound() ? eventVersionDto.getEpEventVersion().getVersion() : null
+                    eventVersionDto.isLastestVersionFound() ? eventDto.getLatestEventSemVer() : null
                 );
+                eventDto.setLatestEventSemVer(epEventVersion.getVersion());
                 // For cascade object creation
                 // If creating new event version to update an existing version, then
                 // store the old and new version for retrieval

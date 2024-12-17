@@ -22,6 +22,11 @@ import com.solace.cloud.ep.designer.model.SchemaVersion;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * SchemaVersionDto represents an EP Schema object version for import.
+ * `epSchemaVersion` is the EP matched Schema version or 
+ * latest Schema version if it exists
+ */
 @Data
 @EqualsAndHashCode(callSuper=true)
 public class SchemaVersionDto extends AbstractVersionDto {

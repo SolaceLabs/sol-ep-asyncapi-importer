@@ -22,6 +22,10 @@ import java.util.List;
 
 import lombok.Data;
 
+/** 
+ * Internal Format for Event Portal Application Objects
+ * Application objects may contain versions
+ */
 @Data
 public class ApplicationDto {
     
@@ -38,6 +42,8 @@ public class ApplicationDto {
     private String type = "application";
 
     private List<ApplicationVersionDto> applicationVersions;
+
+    private String lastestApplicationSemVer;
 
     private boolean matchFound = false;
 

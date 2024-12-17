@@ -19,9 +19,9 @@ package com.solace.ep.asyncapi.importer.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.solace.cloud.ep.designer.model.Address;
@@ -34,8 +34,6 @@ import com.solace.ep.asyncapi.importer.model.dto.EventVersionDto.TopicAddressLev
 
 public class EventPortalModelUtils {
     
-    public static final Set<String> OPEN_OBJECT_STATES = Set.of("1", "2");
-
     /**
      * The purpose of this function is to reserialize JSON schemas in a consistent manner so that they
      * may be compared -- without various whitespace characters.
@@ -49,6 +47,15 @@ public class EventPortalModelUtils {
     {
         final JsonElement jsonElement = JsonParser.parseString(jsonSchemaToReserialize);
         final Gson gson = new Gson();
+        return gson.toJson(jsonElement);
+    }
+
+    public static String reserializeJsonAsPretty(
+        final String jsonToReserialize
+    ) throws Exception
+    {
+        final JsonElement jsonElement = JsonParser.parseString(jsonToReserialize);
+        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(jsonElement);
     }
 
@@ -79,6 +86,15 @@ public class EventPortalModelUtils {
         return (valueList1.size() == valueList2.size()) && valueList1.containsAll(valueList2);
     }
 
+    /**
+     * Determine if two EventVersionDto objects match based upon comparison of:
+     * - EventId
+     * - SchemaId
+     * - Delivery descriptor (topic address) and embedded Enum versions
+     * @param ev1
+     * @param ev2
+     * @return
+     */
     public static boolean eventVersionsMatch( final EventVersionDto ev1, final EventVersionDto ev2 ) {
 
         if (!ev1.getEventId().contentEquals(ev2.getEventId()) ||
@@ -88,6 +104,14 @@ public class EventPortalModelUtils {
         return deliveryDescriptorsMatch(ev1.getDeliveryDescriptor(), ev2.getDeliveryDescriptor());
     }
 
+    /**
+     * Determine if two EventVersionDto Delivery Descriptors match. Includes
+     * - Topic Address structure
+     * - Embedded Enum versions
+     * @param d1
+     * @param d2
+     * @return
+     */
     public static boolean deliveryDescriptorsMatch( final EventVersionDto.DeliveryDescriptor d1, final EventVersionDto.DeliveryDescriptor d2 ) {
 
         if ( d1.getClass() != d2.getClass() ) {
@@ -99,6 +123,12 @@ public class EventPortalModelUtils {
         return topicAddressesMatch(d1.getAddress(), d2.getAddress());
     }
 
+    /**
+     * Determine if Topic address portion of EventVersionDto delivery descriptors match
+     * @param a1
+     * @param a2
+     * @return
+     */
     public static boolean topicAddressesMatch(final EventVersionDto.TopicAddress a1, final EventVersionDto.TopicAddress a2 ) {
 
         if (!a1.getAddressType().contentEquals(a2.getAddressType()) ||
@@ -116,6 +146,15 @@ public class EventPortalModelUtils {
         return true;
     }
 
+    /**
+     * Determines if one topic address level matches the other:
+     * - Level name
+     * - Variable or literal
+     * - Enum version if exists
+     * @param l1
+     * @param l2
+     * @return
+     */
     public static boolean topicAddressLevelsMatch( final EventVersionDto.TopicAddressLevel l1, final EventVersionDto.TopicAddressLevel l2 ) {
 
         if (l1.getClass() != l2.getClass()) {
@@ -134,6 +173,11 @@ public class EventPortalModelUtils {
         return true;
     }
 
+    /**
+     * Maps Event Portal Delivery Descriptor to DTO delivery descriptor
+     * @param deliveryDescriptor
+     * @return
+     */
     public static EventVersionDto.DeliveryDescriptor mapEpEventVersionToDtoDeliveryDescriptor( DeliveryDescriptor deliveryDescriptor ) {
         final EventVersionDto.DeliveryDescriptor dd = new EventVersionDto.DeliveryDescriptor();
         
@@ -154,6 +198,11 @@ public class EventPortalModelUtils {
         return dd;
     }
 
+    /**
+     * Maps DTO Delivery descriptor to Event Portal Delivery Descriptor
+     * @param dtoDeliveryDescriptor
+     * @return
+     */
     public static DeliveryDescriptor mapDtoDeliveryDescriptorToEpEventDeliveryDescriptor( 
         EventVersionDto.DeliveryDescriptor dtoDeliveryDescriptor 
     )

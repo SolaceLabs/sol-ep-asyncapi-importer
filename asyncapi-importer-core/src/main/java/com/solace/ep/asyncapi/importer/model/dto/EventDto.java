@@ -22,6 +22,10 @@ import java.util.List;
 
 import lombok.Data;
 
+/** 
+ * Internal Format for Event Portal Event Objects
+ * Event objects may contain versions
+ */
 @Data
 public class EventDto {
     
@@ -38,6 +42,8 @@ public class EventDto {
     private String type = "event";
 
     private List<EventVersionDto> eventVersions;
+
+    private String latestEventSemVer;
 
     private boolean matchFound = false;
 

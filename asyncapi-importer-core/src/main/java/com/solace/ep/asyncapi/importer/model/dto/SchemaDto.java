@@ -22,6 +22,10 @@ import java.util.List;
 
 import lombok.Data;
 
+/** 
+ * Internal Format for Event Portal SchemaObject Objects
+ * SchemaObject objects may contain versions
+ */
 @Data
 public class SchemaDto {
   
@@ -40,6 +44,8 @@ public class SchemaDto {
     private String type = "schema";
 
     private List<SchemaVersionDto> schemaVersions;
+
+    private String lastestSchemaSemVer;
 
     private boolean matchFound = false;
 

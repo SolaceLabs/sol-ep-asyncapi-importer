@@ -24,6 +24,10 @@ import com.solace.cloud.ep.designer.model.TopicAddressEnum;
 
 import lombok.Data;
 
+/** 
+ * Internal Format for Event Portal TopicAddressEnum Objects
+ * TopicAddressEnum objects may contain versions
+ */
 @Data
 public class EnumDto {
     
@@ -40,6 +44,8 @@ public class EnumDto {
     private List<EnumVersionDto> enumVersions;
 
     private TopicAddressEnum epTopicAddressEnum;
+
+    private String lastestEnumSemVer = null;
 
     private boolean matchFound = false;
 

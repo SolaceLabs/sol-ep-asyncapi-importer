@@ -27,11 +27,14 @@ import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
 
-import com.solace.ep.asyncapi.importer.mapper.AsyncApiToDto;
+import com.solace.ep.asyncapi.importer.mapper.AsyncApiV2ToDto;
 import com.solace.ep.asyncapi.accessor.v2.AsyncApiAccessor;
 import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
 
-public class TestAsyncApiToDtoMapper {
+/**
+ * Test
+ */
+public class AsyncApiV2ToDtoMapperTests {
 
     public static final String ASYNCAPI_SHIPPING_SVC_0_1_0 = "src/test/resources/asyncapi/ShippingService-0.1.0.yaml";
 
@@ -40,7 +43,7 @@ public class TestAsyncApiToDtoMapper {
 
         try {
             AsyncApiAccessor asyncApiAccessor = new AsyncApiAccessor( AsyncApiAccessor.parseAsyncApi(getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_0)) );
-            AsyncApiToDto mapper = new AsyncApiToDto(asyncApiAccessor, "fictionalId", "FictionalDomain" );
+            AsyncApiV2ToDto mapper = new AsyncApiV2ToDto(asyncApiAccessor, "fictionalId", "FictionalDomain" );
             DtoResultSet resultSet = mapper.mapAsyncApiToDto();
 
             assertTrue(resultSet.getMapEnums().size() > 0 );
@@ -57,10 +60,13 @@ public class TestAsyncApiToDtoMapper {
 
         try {
             AsyncApiAccessor asyncApiAccessor = new AsyncApiAccessor( AsyncApiAccessor.parseAsyncApi(getAsyncApiFile(ASYNCAPI_ASAPIO_SALES_ORDER)) );
-            AsyncApiToDto mapper = new AsyncApiToDto(asyncApiAccessor, "fictionalId", "FictionalDomain" );
+            AsyncApiV2ToDto mapper = new AsyncApiV2ToDto(asyncApiAccessor, "fictionalId", "FictionalDomain" );
             DtoResultSet resultSet = mapper.mapAsyncApiToDto();
 
-            assertTrue(resultSet.getMapEnums().size() > 0 );
+            assertTrue(resultSet.getMapEnums().size() == 0 );
+            assertTrue(resultSet.getMapApplications().size() ==1);
+            assertTrue(resultSet.getMapSchemas().size() == 1);
+            assertTrue(resultSet.getMapEvents().size() ==1);
 
         } catch (Exception exc) {
             fail(exc.getLocalizedMessage());

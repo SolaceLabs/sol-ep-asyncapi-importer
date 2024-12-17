@@ -25,6 +25,11 @@ import com.solace.cloud.ep.designer.model.ApplicationVersion;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * ApplicationVersionDto represents an EP application version for import.
+ * `epApplicationVersion` is the EP matched application version or 
+ * latest application version if it exists
+ */
 @Data
 @EqualsAndHashCode(callSuper=true)
 public class ApplicationVersionDto extends AbstractVersionDto {
@@ -43,6 +48,7 @@ public class ApplicationVersionDto extends AbstractVersionDto {
 
     private String stateId;
 
+    // Matched EP ApplicationVersion or latest EP ApplicationVersion
     private ApplicationVersion epApplicationVersion;
     
     public List<String> getDeclaredProducedEventVersionIds() {

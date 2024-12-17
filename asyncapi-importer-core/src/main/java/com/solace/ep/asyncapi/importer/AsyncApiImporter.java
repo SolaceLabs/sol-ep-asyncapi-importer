@@ -19,11 +19,15 @@ package com.solace.ep.asyncapi.importer;
 
 import com.solace.ep.asyncapi.accessor.v2.AsyncApiAccessor;
 import com.solace.ep.asyncapi.importer.client.EventPortalClientApi;
-import com.solace.ep.asyncapi.importer.mapper.AsyncApiToDto;
+import com.solace.ep.asyncapi.importer.mapper.AsyncApiV2ToDto;
 import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Class to choreograph and execute AsyncApi import into Event Portal.
+ * Can instantiate the object and execute or invoke statically.
+ */
 @Slf4j
 public class AsyncApiImporter {
     
@@ -173,7 +177,7 @@ public class AsyncApiImporter {
         );
         this.applicationDomainId = importClient.getAppDomainId();
 
-        final AsyncApiToDto asyncApiToDtoMapper = new AsyncApiToDto(
+        final AsyncApiV2ToDto asyncApiToDtoMapper = new AsyncApiV2ToDto(
             asyncApiAccessor, 
             applicationDomainId, 
             applicationDomainName

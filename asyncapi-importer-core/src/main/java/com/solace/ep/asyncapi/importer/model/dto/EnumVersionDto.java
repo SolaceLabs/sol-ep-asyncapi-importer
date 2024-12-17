@@ -25,6 +25,11 @@ import com.solace.cloud.ep.designer.model.TopicAddressEnumVersion;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * EnumVersionDto represents an EP topic address enum for import.
+ * `epEnumVersion` is the EP matched topic address enum version or 
+ * latest topic address enum version if it exists
+ */
 @Data
 @EqualsAndHashCode(callSuper=true)
 public class EnumVersionDto extends AbstractVersionDto {

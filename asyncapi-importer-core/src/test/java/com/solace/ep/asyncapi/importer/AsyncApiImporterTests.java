@@ -22,10 +22,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-// import com.solace.ep.asyncapi.importer.AsyncApiImporter;
+/**
+ * Conduct JUnit tests to import various AsyncApi spec files
+ */
+public class AsyncApiImporterTests {
 
-public class TestImporter {
-   
     public static final String ASYNCAPI_SHIPPING_SVC_0_1_0 = "src/test/resources/asyncapi/ShippingService-0.1.0.yaml";
     public static final String ASYNCAPI_SHIPPING_SVC_0_1_1 = "src/test/resources/asyncapi/ShippingService-0.1.1.yaml";
     public static final String ASYNCAPI_SHIPPING_SVC_0_1_2 = "src/test/resources/asyncapi/ShippingService-0.1.2.yaml";
@@ -43,13 +44,13 @@ public class TestImporter {
 
     @Test
     @Order(1)
-    public void testAsyncApiImporter1()
+    public void asyncApiImporter1()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_0);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_0);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -62,13 +63,13 @@ public class TestImporter {
 
     @Test
     @Order(2)
-    public void testAsyncApiImporter2()
+    public void asyncApiImporter2()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_1);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_1);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -81,13 +82,13 @@ public class TestImporter {
 
     @Test
     @Order(3)
-    public void testAsyncApiImporter3()
+    public void asyncApiImporter3()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_2);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_2);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -102,13 +103,13 @@ public class TestImporter {
 
     @Test
     @Order(4)
-    public void testAsyncApiImporter2_0()
+    public void asyncApiImporter2_0()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_0);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_0);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -123,13 +124,13 @@ public class TestImporter {
 
     @Test
     @Order(5)
-    public void testAsyncApiImporter2_1()
+    public void asyncApiImporter2_1()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_1);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_1);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -144,13 +145,13 @@ public class TestImporter {
 
     @Test
     @Order(6)
-    public void testAsyncApiImporter2_2()
+    public void asyncApiImporter2_2()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_2);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_2);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -165,13 +166,13 @@ public class TestImporter {
 
     @Test
     @Order(7)
-    public void testAsyncApiImporter_Alt_1_0()
+    public void asyncApiImporter_Alt_1_0()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_ALT_1_0_0);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_ALT_1_0_0);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -186,13 +187,13 @@ public class TestImporter {
 
     @Test
     @Order(8)
-    public void testFlight_0_1_0()
+    public void importFlight_0_1_0()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_0);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_0);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -205,13 +206,13 @@ public class TestImporter {
     
     @Test
     @Order(9)
-    public void testFlight_0_1_1()
+    public void importFlight_0_1_1()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_1);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_1);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -224,13 +225,13 @@ public class TestImporter {
 
     @Test
     @Order(10)
-    public void testFlight_0_1_2()
+    public void importFlight_0_1_2()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_2);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_2);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -243,13 +244,13 @@ public class TestImporter {
 
     @Test
     @Order(11)
-    public void testFlight_0_2_0()
+    public void importFlight_0_2_0()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_2_0);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_2_0);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
@@ -262,13 +263,13 @@ public class TestImporter {
 
     @Test
     @Order(12)
-    public void testFlight_0_2_1()
+    public void importFlight_0_2_1()
     {
         final String BEARER_TOKEN = ConfigManager.getProperty("ep.bearer_token");
         final String BASE_PATH = ConfigManager.getProperty("ep.baseurl");
         final String APP_DOMAIN_NAME = ConfigManager.getProperty("ep.appdomain.name");
         
-        final String asyncApiSpecFile = TestAsyncApiToDtoMapper.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_2_1);
+        final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_2_1);
 
         try {
             AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");

@@ -25,6 +25,11 @@ import com.solace.cloud.ep.designer.model.EventVersion;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * EventVersionDto represents an EP Event for import.
+ * `epEventVersion` is the EP matched Event version or 
+ * latest Event version if it exists
+ */
 @Data
 @EqualsAndHashCode(callSuper=true)
 public class EventVersionDto extends AbstractVersionDto {

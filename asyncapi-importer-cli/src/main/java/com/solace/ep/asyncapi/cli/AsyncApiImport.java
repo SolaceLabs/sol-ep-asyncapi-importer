@@ -32,6 +32,9 @@ import org.apache.commons.cli.ParseException;
 
 import com.solace.ep.asyncapi.importer.AsyncApiImporter;
 
+/**
+ * Class to wrap AsyncApi import to call from a command line.
+ */
 public class AsyncApiImport {
 
     private static final String CMD_LINE_SYNTAX = "asyncapi-import -a ASYNCAPI_TO_IMPORT -d APP_DOMAIN -t EP_TOKEN [-u BASE_URL] [-m | -i | -p] [-e] [-z]\n";
@@ -153,9 +156,6 @@ public class AsyncApiImport {
         try {
             CommandLine commandLine = cliParser.parse(options, args, false);
             hasHelpOption = commandLine.hasOption("h");
-            // if (hasHelpOption) {
-            //     displayHelp(options);
-            // }
         } catch (ParseException parseException) {
             return false;
         }
@@ -168,6 +168,12 @@ public class AsyncApiImport {
         helpFormatter.printHelp(CMD_LINE_SYNTAX, options);
     }
 
+    /**
+     * Read an entire file from disk into a String variable
+     * @param fileName
+     * @return
+     * @throws Exception
+     */
     public static String getFileAsString(final String fileName) throws Exception 
     {
         Path path = Paths.get( fileName );

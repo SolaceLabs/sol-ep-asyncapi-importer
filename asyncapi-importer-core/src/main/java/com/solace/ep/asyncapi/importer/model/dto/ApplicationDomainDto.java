@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+ /**
+  * Internal format for EP Application Domain
+  */
 package com.solace.ep.asyncapi.importer.model.dto;
 
 import lombok.Data;

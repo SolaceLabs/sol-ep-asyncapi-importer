@@ -665,7 +665,7 @@ public class EventPortalClientApi {
         schemaVersion.setSchemaId(schemaId);
         schemaVersion.setDescription("Schema Version created by AsyncApi Import " + schemaName);
         schemaVersion.setEndOfLifeDate(null);
-        schemaVersion.setContent(schemaContent);
+        schemaVersion.setContent(EventPortalModelUtils.reserializeJsonAsPretty(schemaContent));
         schemaVersion.setVersion(incrementSemVer(lastSemVer));
 
         try {
@@ -678,6 +678,14 @@ public class EventPortalClientApi {
         }
     }
 
+    /**
+     * Update schema version with content - currently works with schema content type JSON
+     * Updates content (schema) only
+     * @param schemaVersionId
+     * @param schemaContent
+     * @return
+     * @throws Exception
+     */
     public SchemaVersion updateSchemaVersion(
         final String schemaVersionId,
         final String schemaContent
@@ -686,7 +694,7 @@ public class EventPortalClientApi {
         SchemasApi schemasApi = new SchemasApi(apiClient);
 
         SchemaVersion schemaVersion = new SchemaVersion();
-        schemaVersion.setContent(schemaContent);
+        schemaVersion.setContent(EventPortalModelUtils.reserializeJsonAsPretty(schemaContent));
 
         try {
             SchemaVersionResponse response = schemasApi.updateSchemaVersion(schemaVersionId, schemaVersion);
@@ -869,6 +877,15 @@ public class EventPortalClientApi {
         }
     }
 
+    /**
+     * Create a new application version
+     * @param appId - appId where the application version child should be created
+     * @param appName - appName of the parent application. Used for logging
+     * @param declaredPublishedEventIds - List of published events
+     * @param lastSemVer - SemVer of the last application version
+     * @return
+     * @throws Exception
+     */
     public ApplicationVersion createApplicationVersion(
         final String appId,
         final String appName,
@@ -922,6 +939,13 @@ public class EventPortalClientApi {
         }
     }
 
+    /**
+     * Increment SemVer passed as argument based upon the strategy determined when this object
+     * was constructed.
+     * @param lastSemVer
+     * @return
+     * @throws Exception
+     */
     private String incrementSemVer( final String lastSemVer ) throws Exception
     {
         final String SEMVER_REGEX = "^(\\d+)\\.(\\d+)\\.(\\d+)(?:-([a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*))?(?:\\+([a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*))?$";
@@ -930,7 +954,6 @@ public class EventPortalClientApi {
         if (lastSemVer == null || lastSemVer == "") {
             return "1.0.0";
         }
-
         final Matcher m = SEMVER_PATTERN.matcher(lastSemVer);
         if (!m.matches()) {
             final String msg = "EventPortalClientApi.incrementSemVer - Error parsing SemVer of Event Portal Object: [" + lastSemVer + "]";
@@ -948,16 +971,18 @@ public class EventPortalClientApi {
         switch (versionStrategy) {
             case MAJOR:
                 iMajor++;
+                iMinor = 0;
+                iPatch = 0;
                 break;
             case MINOR:
                 iMinor++;
+                iPatch = 0;
                 break;
             case PATCH:
                 iPatch++;
                 break;
             default:
         }
-
         return String.format("%d.%d.%d", iMajor, iMinor, iPatch);
     }
 }
