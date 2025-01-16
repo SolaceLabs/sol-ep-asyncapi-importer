@@ -22,7 +22,7 @@ public class AsyncApi_test_importer {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile("src/test/resources/asyncapi/test-importer/OnlineStore-00-INIT.yaml");
 
         try {
-            AsyncApiImporter.execImportOperation(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, null, "MAJOR");
+            AsyncApiImporter.execImportOperation(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, null, "MAJOR");
         } catch (Exception exc) {
             fail(exc.getLocalizedMessage());
             return;
@@ -46,7 +46,7 @@ public class AsyncApi_test_importer {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile("src/test/resources/asyncapi/test-importer/Fullfillment-00-INIT.yaml");
 
         try {
-            AsyncApiImporter.execImportOperation(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, null, "MINOR");
+            AsyncApiImporter.execImportOperation(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, null, "MINOR");
         } catch (Exception exc) {
             fail(exc.getLocalizedMessage());
             return;
@@ -70,7 +70,7 @@ public class AsyncApi_test_importer {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile("src/test/resources/asyncapi/test-importer/OnlineStore-01.yaml");
 
         try {
-            AsyncApiImporter.execImportOperation(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, null, "MAJOR");
+            AsyncApiImporter.execImportOperation(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, null, "MAJOR");
         } catch (Exception exc) {
             fail(exc.getLocalizedMessage());
             return;
@@ -95,7 +95,7 @@ public class AsyncApi_test_importer {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile("src/test/resources/asyncapi/test-importer/Fullfillment-01.yaml");
 
         try {
-            AsyncApiImporter.execImportOperation(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, null, "MAJOR");
+            AsyncApiImporter.execImportOperation(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, null, "MAJOR");
         } catch (Exception exc) {
             fail(exc.getLocalizedMessage());
             return;

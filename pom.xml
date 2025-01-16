@@ -10,6 +10,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>asyncapi-accessor-v2</module>
+    <module>asyncapi-accessor-v3</module>
     <module>asyncapi-importer-core</module>
     <module>asyncapi-importer-cli</module>
   </modules>

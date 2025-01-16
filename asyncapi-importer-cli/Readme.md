@@ -30,7 +30,7 @@ You can download a releaseed version of the JAR file from the GitHub project.
 
 Command will have the form:
 
-java -jar asyncapi-import.jar -a **ASYNCAPI_TO_IMPORT** -d **APP_DOMAIN** -t **EP_TOKEN** [-u BASE_URL] [-m | -i | -p]
+java -jar asyncapi-import.jar -a **ASYNCAPI_TO_IMPORT** -d **APP_DOMAIN** -t **EP_TOKEN** [-u BASE_URL] [-m | -i | -p] [-e] [-z]
 
 **You will need a minimum of three things to execute the importer:**
 1. AsyncApi spec file to import
@@ -47,10 +47,10 @@ java -jar asyncapi-import.jar -a **ASYNCAPI_TO_IMPORT** -d **APP_DOMAIN** -t **E
 |`-t`|`--ep-token`|Event Portal Access Token|**Yes**|N/A|
 |`-u`|`--ep-base-url`|Cloud API URL<br>(varies by region)|No|https://api.solace.cloud|
 |`-m`|`--version-major`|Increment Major Version|No|`-m` / `--version-major`|
-|`-i`|`--version-minor`|Increment Minor Version|No|`-i` / `--version-minor`|
-|`-p`|`--version-patch`|Increment Patch Version|No|`-p` / `--version-patch`|
+|`-i`|`--version-minor`|Increment Minor Version|No|`-m` / `--version-major`|
+|`-p`|`--version-patch`|Increment Patch Version|No|`-m` / `--version-major`|
 |`-e`|`--events-only`|Import Events, Enums, and<br>Schemas. Skip Applications|No|N/A|
-|`-z`|`--no-cascade`|Disable cascade update of objects<br>Schemas. Skip Applications|No|N/A|
+|`-z`|`--no-cascade`|Disable cascade update of objects<br>Schemas|No|N/A|
 |`-h`|`--help`|Display Help|No|N/A|
 
 > **Note:** Version options are mutually exclusive. Incremented versions are new SemVer versions when new object versions are created as a result of importing.

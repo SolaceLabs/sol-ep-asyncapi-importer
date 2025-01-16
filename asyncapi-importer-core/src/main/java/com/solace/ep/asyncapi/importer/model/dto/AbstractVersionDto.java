@@ -24,7 +24,7 @@ package com.solace.ep.asyncapi.importer.model.dto;
 import lombok.Data;
 
 @Data
-public class AbstractVersionDto {
+public abstract class AbstractVersionDto {
     
     private boolean matchFound = false;
 

@@ -31,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncApiImporter {
     
+    private String applicationDomainId;
+
     private String applicationDomainName;
 
     private String eventPortalBearerToken;
@@ -45,8 +47,6 @@ public class AsyncApiImporter {
 
     private boolean disableApplicationImport;
 
-    private String applicationDomainId;
-
     /**
      * @param applicationDomainName - Name of Application Domain in Event Portal where objects represented in the AsyncApi spec will be imported.
      * @param eventPortalBearerToken - Event Portal Bearer Token, must have read and write privileges
@@ -60,6 +60,7 @@ public class AsyncApiImporter {
      * @throws Exception
      */
     public AsyncApiImporter(
+        final String applicationDomainId,
         final String applicationDomainName,
         final String eventPortalBearerToken,
         final String asyncApiSpecToImport,
@@ -69,6 +70,7 @@ public class AsyncApiImporter {
         final boolean disableApplicationImport
     ) throws Exception
     {
+        this.applicationDomainId = applicationDomainId;
         this.applicationDomainName = applicationDomainName;
         this.eventPortalBearerToken = eventPortalBearerToken;
         this.asyncApiSpecToImport = asyncApiSpecToImport;
@@ -93,6 +95,7 @@ public class AsyncApiImporter {
      * @throws Exception
      */
     public AsyncApiImporter(
+        final String applicationDomainId,
         final String applicationDomainName,
         final String eventPortalBearerToken,
         final String asyncApiSpecToImport,
@@ -100,7 +103,7 @@ public class AsyncApiImporter {
         final String newVersionStrategy
     ) throws Exception
     {
-        this(applicationDomainName, eventPortalBearerToken, asyncApiSpecToImport, eventPortalBaseUrl, newVersionStrategy, false, false);
+        this(applicationDomainId, applicationDomainName, eventPortalBearerToken, asyncApiSpecToImport, eventPortalBaseUrl, newVersionStrategy, false, false);
     }
 
     /**
@@ -117,6 +120,7 @@ public class AsyncApiImporter {
      * @throws Exception
      */
     public static void execImportOperation(
+        final String applicationDomainId,
         final String applicationDomainName,
         final String eventPortalBearerToken,
         final String asyncApiSpecToImport,
@@ -127,6 +131,7 @@ public class AsyncApiImporter {
     ) throws Exception
     {
         final AsyncApiImporter importer = new AsyncApiImporter(
+            applicationDomainId,
             applicationDomainName, 
             eventPortalBearerToken, 
             asyncApiSpecToImport, 
@@ -150,6 +155,7 @@ public class AsyncApiImporter {
      * @throws Exception
      */
     public static void execImportOperation(
+        final String applicationDomainId,
         final String applicationDomainName,
         final String eventPortalBearerToken,
         final String asyncApiSpecToImport,
@@ -157,7 +163,7 @@ public class AsyncApiImporter {
         final String newVersionStrategy
     ) throws Exception
     {
-        final AsyncApiImporter importer = new AsyncApiImporter(applicationDomainName, eventPortalBearerToken, asyncApiSpecToImport, eventPortalBaseUrl, newVersionStrategy);
+        final AsyncApiImporter importer = new AsyncApiImporter(applicationDomainId, applicationDomainName, eventPortalBearerToken, asyncApiSpecToImport, eventPortalBaseUrl, newVersionStrategy);
         importer.execImportOperation();
     }
 
@@ -169,13 +175,24 @@ public class AsyncApiImporter {
     {
         final AsyncApiAccessor asyncApiAccessor = new AsyncApiAccessor( AsyncApiAccessor.parseAsyncApi(asyncApiSpecToImport) );
 
-        final EventPortalClientApi importClient = new EventPortalClientApi(
-            this.eventPortalBearerToken, 
-            this.applicationDomainName, 
-            this.versionStrategy,
-            this.eventPortalBaseUrl
-        );
-        this.applicationDomainId = importClient.getAppDomainId();
+        EventPortalClientApi importClient;
+        if (this.applicationDomainId == null || this.applicationDomainId.isBlank()) {
+            importClient = new EventPortalClientApi(
+                this.eventPortalBearerToken, 
+                this.applicationDomainName, 
+                this.versionStrategy,
+                this.eventPortalBaseUrl
+            );
+            this.applicationDomainId = importClient.getAppDomainId();
+        } else {
+            importClient = new EventPortalClientApi(
+                this.eventPortalBearerToken, 
+                versionStrategy,
+                this.eventPortalBaseUrl,
+                applicationDomainId
+            );
+            this.applicationDomainName = importClient.getAppDomainName();
+        }
 
         final AsyncApiV2ToDto asyncApiToDtoMapper = new AsyncApiV2ToDto(
             asyncApiAccessor, 
@@ -210,7 +227,9 @@ public class AsyncApiImporter {
         {
             importOperator.cascadeUpdateEvents();
 
-            importOperator.cascadeUpdateApplications();
+            if (! disableApplicationImport) {
+                importOperator.cascadeUpdateApplications();
+            }
         }
     }
 }

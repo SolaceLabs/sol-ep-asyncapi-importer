@@ -34,6 +34,7 @@ import com.solace.cloud.ep.designer.api.SchemasApi;
 import com.solace.cloud.ep.designer.auth.HttpBearerAuth;
 import com.solace.cloud.ep.designer.model.Application;
 import com.solace.cloud.ep.designer.model.ApplicationDomain;
+import com.solace.cloud.ep.designer.model.ApplicationDomainResponse;
 import com.solace.cloud.ep.designer.model.ApplicationDomainsResponse;
 import com.solace.cloud.ep.designer.model.ApplicationResponse;
 import com.solace.cloud.ep.designer.model.ApplicationVersion;
@@ -164,6 +165,45 @@ public class EventPortalClientApi {
     }
 
     /**
+     * Start from Application Domain ID instead of Application Domain Name
+     * @param bearerToken
+     * @param versionStrategy
+     * @param baseUrlPath
+     * @param appDomainId
+     * @throws Exception
+     */
+    public EventPortalClientApi(
+        final String bearerToken, 
+        final EpNewVersionStrategy versionStrategy,
+        final String baseUrlPath,
+        final String appDomainId
+    ) throws Exception 
+    {
+        this.bearerToken = bearerToken;
+        this.appDomainId = appDomainId;
+        this.baseUrlPath = baseUrlPath == null || baseUrlPath.isBlank() ? DEFAULT_BASE_URL_PATH : baseUrlPath;
+        this.versionStrategy = versionStrategy == null ? EpNewVersionStrategy.MAJOR : versionStrategy;
+        this.apiClient = getApiClient();
+        ApplicationDomain localAppDomain = getApplicationDomainById( appDomainId );
+        this.applicationDomain = localAppDomain;
+        this.appDomainName = localAppDomain.getName();
+    }
+
+    public EventPortalClientApi( 
+        final ApiClient apiClient, 
+        final EpNewVersionStrategy versionStrategy,
+        final String appDomainId
+    ) throws Exception
+    {
+        this.apiClient = apiClient;
+        this.appDomainId = appDomainId;
+        ApplicationDomain localAppDomain = getApplicationDomainById(appDomainId);
+        this.applicationDomain = localAppDomain;
+        this.appDomainName = localAppDomain.getName();
+        this.versionStrategy = versionStrategy == null ? EpNewVersionStrategy.MAJOR : versionStrategy;
+    }
+
+    /**
      * Returns ApiClient object used by the instance of EventPortalClientApi
      * @return ApiClient object
      */
@@ -178,6 +218,30 @@ public class EventPortalClientApi {
             this.apiClient = localApiClient;
         }
         return this.apiClient;
+    }
+
+    /**
+     * Get the Application Domain by the ID (Key)
+     * Calls Solace Cloud API
+     * @param appDomainId
+     * @return
+     * @throws Exception
+     */
+    public ApplicationDomain getApplicationDomainById(final String appDomainId) throws Exception
+    {
+        ApplicationDomainsApi applicationDomainsApi = new ApplicationDomainsApi(apiClient);
+        try {
+            ApplicationDomainResponse applicationDomainResponse = applicationDomainsApi.getApplicationDomain(appDomainId, null);
+            if (applicationDomainResponse.getData() != null) {
+                return applicationDomainResponse.getData();
+            } else {
+                log.error("Application domain ID = [{}] not found", appDomainId);
+                throw new Exception("Application domain ID = [" + appDomainId + "] not found");
+            }
+        } catch (Exception exc) {
+            log.error("Error encountered in EventPortalClientApi.getApplicationDomainById", exc);
+            throw exc;
+        }
     }
 
     /**

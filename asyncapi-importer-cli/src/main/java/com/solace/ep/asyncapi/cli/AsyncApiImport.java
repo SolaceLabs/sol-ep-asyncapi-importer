@@ -127,6 +127,7 @@ public class AsyncApiImport {
             final String asyncApiContent = getFileAsString(asyncapiSpecFile);
 
             AsyncApiImporter.execImportOperation(
+                null,
                 appDomainName, 
                 epToken, 
                 asyncApiContent, 

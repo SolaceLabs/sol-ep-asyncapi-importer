@@ -1,0 +1,320 @@
+## AsyncApi public spec obtained from GoldenGate
+## IP Addresses redacted
+########################################################
+##
+## Data Streaming AsyncAPI definitions
+##
+########################################################
+asyncapi: '3.0.0'
+info:
+  title: Data Streaming API
+  version: '1.0.0'
+  description: |
+    allows clients to subscribe to a data streaming API
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0'
+
+########################################################
+##
+## server definition
+##
+########################################################
+servers:
+  127.0.0.1:
+    host: 127.0.0.1:7803
+    protocol: ws
+
+defaultContentType: application/json
+
+########################################################
+##
+## channel definition
+##
+########################################################
+channels:
+  GG_ORDERS:
+    address: '/services/v2/stream/GG_ORDERS'
+    messages:
+      userMessage:
+        $ref : '#/components/messages/userRecords'
+    bindings:
+      ws:
+        bindingVersion: 0.1.0
+        query:
+          type: object
+          description: query parameter like begin=earliest
+          properties:
+            begin:
+              oneOf: 
+                - type: string
+                  description: earliest possible starting position
+                  enum:
+                    - earliest
+                - type: string
+                  description: current starting position
+                  enum:
+                    - now
+                - type: string
+                  pattern: ^G-
+                  description: last processed record position
+              default: earliest
+              description: begin position to start streaming data
+operations:
+  onRecords:
+    action: receive
+    channel:
+      $ref : '#/channels/GG_ORDERS'
+    summary: data records
+
+########################################################
+##
+## components definition
+##
+########################################################
+components:
+  messages:
+    userRecords:
+      name: userRecords
+      title: User Data Records
+      summary: array of user data records in json format
+      contentType: application/json
+      payload:
+        type: array
+        items:
+          $ref : '#/components/schemas/record'
+
+  ########################################################
+  ## schemas definition
+  ########################################################
+  schemas:
+    ########################################################
+    ## DML operation record schema definition
+    ########################################################
+    dmlRecord:
+      type: object
+      properties:
+        qual_table:
+          description: qualified table object name
+          type: string
+        op_type:
+          type: string
+          description: operation type in string format  
+          enum:
+            - INSERT
+            - UPDATE
+            - DELETE
+        op_ts:
+          description: operation timestamp
+          type: string
+        xid:
+          description: Id of the transaction where the record belongs to
+          type: string
+        pos:        
+          description: record position, a combination of csn, transaction id, and record# in transaction
+          type: string
+        before:
+          description: record before image, a collection of key-value pairs representing the column names and original column values. Applicable for update and delete operations.
+          type: object
+        after:
+          description: record after image, a collection of key-value pairs representing the column names and new column values. Applicable for insert and update operations.
+          type: object 
+      required:
+        - qual_table
+        - op_type
+        - op_ts
+        - xid
+        - pos
+
+    ########################################################
+    ## DDL operation record schema definition
+    ########################################################
+    ddlRecord:
+      type: object      
+      properties:
+        op_type:
+          type: string
+          description: operation type indicating a DDL change record
+          enum:
+            - DDL
+        op_ts:
+          description: operation timestamp
+          type: string
+        xid:
+          description: Id of the transaction where the record belongs to
+          type: string
+        pos:        
+          description: record position, a combination of csn, transaction id, and record# in transaction
+          type: string
+        ddl:
+          description: ddl object name and statement 
+          type: object
+          properties:
+            object:
+              type: object
+              description: object name for the ddl operation
+            statement:
+              description: ddl operation statement
+              type: string
+          required:
+            - object
+            - statement
+      required:
+        - op_type
+        - op_ts
+        - xid
+        - pos
+        - ddl
+
+    ########################################################
+    ## Object Metadata record schema definition
+    ########################################################
+    objectMetadataRecord:
+      type: object    
+      properties:
+        qual_table:
+          description: qualified table object name
+          type: string
+        op_type:
+          type: string
+          description: operation type indicating an object metadata record
+          enum:
+            - OBJECT_METADATA
+        columns:
+          description: column definitions for the table object, a collection of column definition each containing the column data type, if the column is nullable, and if the column is part of the key column.
+          type: object
+      required:
+        - qual_table
+        - op_type
+        - columns
+       
+
+    ########################################################
+    ## Metadata record schema definition
+    ########################################################
+    streamMetadataRecord:
+      type: object    
+      properties:
+        op_type:
+          type: string
+          description: operation type indicating a stream metadata record
+          enum:
+            - STREAM_METADATA
+        producer:
+          description: information related to the stream producer. 
+          type: object
+          properties:
+            name:
+              description: name of the stream producer. 
+              type: string
+            version:
+              description: version of the stream producer. 
+              type: string
+        database:
+          description: information related to the source database. 
+          type: object
+          properties:
+            name:
+              description: name of the source database. 
+              type: string
+            version:
+              description: version of the source database. 
+              type: string
+            charset:
+              description: source database charset. 
+              type: string
+            timeZone:
+              description: source database timezone. 
+              type: string
+        machine:
+          description: information related to the host machine. 
+          type: object
+          properties:
+            node:
+              description: host name. 
+              type: string
+            system:
+              description: operation system of the host. 
+              type: string
+            release:
+              description: system release string. 
+              type: string
+            version:
+              description: system version string. 
+              type: string
+            hardware:
+              description: system hardware architecture. 
+              type: string
+        source:
+          description: information related to the data source process. 
+          type: object
+          properties:
+            file:
+              description: source trail file. 
+              type: string
+            uri:
+              description: URI of source process that generates the data. 
+              type: string
+            creationTime:
+              description: timestamp when data generated in the data source. 
+              type: string
+            compatibility:
+              description: data source compatibility level. 
+              type: string
+      required:
+        - op_type
+        - producer
+        - database
+        - machine
+        - source
+       
+
+    ########################################################
+    ## json schema record for every type of records
+    ########################################################
+    schemaRecord:
+      type: object    
+      properties:
+        id:
+          description: schema record identifier
+          type: string
+        title:
+          type: string
+          description: title of the json schema record
+        $schema:
+          type: string
+          description: json schema dialect
+          enum:
+            - http://json-schema.org/draft-04/schema#
+        type:
+          type: string
+          description: type of this json schema
+        properties:
+          description: a list of properties that describe the schema object.
+          type: object
+        required:
+          type: array
+          description: an array of required properties
+        additionalProperties:
+          type: boolean
+          description: if additional properties are allowed
+      required:
+        - id
+        - title
+        - $schema
+        - type
+        - properties
+        - required
+        - addtionalProperties
+       
+
+    ########################################################
+    ## Generic record schema definition
+    ########################################################
+    record:
+      oneOf:
+        - $ref: "#/components/schemas/dmlRecord"
+        - $ref: "#/components/schemas/ddlRecord"
+        - $ref: "#/components/schemas/objectMetadataRecord"
+        - $ref: "#/components/schemas/streamMetadataRecord"
+        - $ref: "#/components/schemas/schemaRecord"

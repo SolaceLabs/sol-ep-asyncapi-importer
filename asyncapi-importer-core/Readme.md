@@ -62,3 +62,9 @@ Details:
 
 ### Schemas
 
+# Enhancements
+- Avro Schemas
+- Primitive schemas
+- Check the EP token access before being import operation
+- AsyncApi 3.0
+- Add option to make all new objects shared/not-shared

@@ -53,7 +53,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_0);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -72,7 +72,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_1);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -91,7 +91,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_1_2);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -112,7 +112,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_0);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -133,7 +133,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_1);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -154,7 +154,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_0_2_2);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -175,7 +175,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_SHIPPING_SVC_ALT_1_0_0);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -196,7 +196,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_0);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -215,7 +215,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_1);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -234,7 +234,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_1_2);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -253,7 +253,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_2_0);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
@@ -272,7 +272,7 @@ public class AsyncApiImporterTests {
         final String asyncApiSpecFile = AsyncApiV2ToDtoMapperTests.getAsyncApiFile(ASYNCAPI_FLIGHTSVC_0_2_1);
 
         try {
-            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
+            AsyncApiImporter asyncApiImporter = new AsyncApiImporter(null, APP_DOMAIN_NAME, BEARER_TOKEN, asyncApiSpecFile, BASE_PATH, "MINOR");
             asyncApiImporter.execImportOperation();
 
         } catch (Exception exc) {
