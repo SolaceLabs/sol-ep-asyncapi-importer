@@ -24,7 +24,14 @@ JUnit tests require access and configuration for an Event Portal account and App
 ## AsyncApi Accessor v2
 This module provides the capability to parse and extract objects from an AsyncAPI specifications.
 This module was created to handle AsyncAPI versions 2.X. The intent is for this module to be used in
-applications where needed. Convenience methods are provided to obtain objects and fields, including Event Portal Extensions. 
+applications where needed. Convenience methods are provided to obtain objects and fields, including Event Portal Extensions.
+
+## AsyncApi Accessor v3
+***Incomplete / Not fully implemented*** - Under construction. This module is not referenced by other modules at this time.
+
+This module provides the capability to parse and extract objects from an AsyncAPI specifications.
+This module was created to handle AsyncAPI versions 3.X. The intent is for this module to be used in
+applications where needed. Convenience methods are provided to obtain objects and fields, including Event Portal Extensions.
 
 ## AsyncApi Importer Core
 This module provides the core functionality of the importer.
@@ -38,3 +45,4 @@ Details for how to invoke the CLI can be found in the module's
 
 # Issues and Enhancements
 1. Add ability to specify new objects as Shared upon creation
+2. Add AsyncApi 3.X support
