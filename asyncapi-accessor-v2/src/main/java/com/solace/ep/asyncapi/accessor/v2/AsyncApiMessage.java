@@ -221,8 +221,13 @@ public class AsyncApiMessage {
             try {
                 JsonObject payloadObject = asyncApiMessage.getAsJsonObject( AsyncApiFieldConstants.API_PAYLOAD );
                 final String titleName = payloadObject.get("title").getAsString();
-                if (titleName != null && ! titleName.isEmpty()) {
-                    schemaName = titleName;
+                if (titleName != null && ! titleName.isBlank()) {
+                    int slashLastIdx = titleName.lastIndexOf('/');
+                    if (slashLastIdx > 0 && slashLastIdx < (titleName.length() - 1)) {
+                        schemaName = titleName.substring(slashLastIdx + 1);     // Take the last name element after last '/' for ASAPIO specs
+                    } else {
+                        schemaName = titleName.replaceAll("/", "__");   // Add replaceAll for '/' characters in ASAPIO schema title
+                    }
                 } else { 
                     final String schemaIdField = payloadObject.getAsJsonObject("$id").getAsString();
                     if (schemaIdField != null && !schemaIdField.isEmpty()) {
