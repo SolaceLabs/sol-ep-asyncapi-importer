@@ -90,6 +90,15 @@ public class HelperFunctions {
         }
     }
 
+    @Test
+    public void releaseShippingServiceApp() {
+        try {
+            updateLatestApplicationVersionToReleased("ShippingService");
+        } catch (Exception exc) {
+            fail(exc.getMessage());
+        }
+    }
+
     // EVENT - ONLINE STORE - OrderCreated
     @Test
     public void releaseOrderCreatedEvent() {
