@@ -15,21 +15,29 @@
  * limitations under the License.
  */
 
-/**
- * DTO is the internal working area to manage imports of Event Portal Objects
- * AbstractVersionDto is the Base class for DTO object versions
- */
 package com.solace.ep.asyncapi.importer.model.dto;
 
 import lombok.Data;
 
+/**
+ * DTO is the internal working area to manage imports of Event Portal Objects
+ * AbstractVersionDto is the Base class for DTO object versions
+ */
 @Data
 public abstract class AbstractVersionDto {
+
+    private String id;
     
     private boolean matchFound = false;
 
     private boolean lastestVersionFound = false;
 
     private boolean latestVersionFoundInDraftState = false;
+
+    private String version;
+
+    private String displayName;
+
+    private String stateId;
 
 }

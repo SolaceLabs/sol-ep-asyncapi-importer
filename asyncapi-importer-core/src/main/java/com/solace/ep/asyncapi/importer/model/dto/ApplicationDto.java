@@ -21,36 +21,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /** 
  * Internal Format for Event Portal Application Objects
  * Application objects may contain versions
  */
 @Data
-public class ApplicationDto {
+@EqualsAndHashCode(callSuper=true)
+public class ApplicationDto extends AbstractDtoObject {
     
-    private String id;
-
-    private String name;
-
     private String applicationType = "standard";
 
     private String brokerType = "solace";
 
-    private String applicationDomainId;
-
     private String type = "application";
 
     private List<ApplicationVersionDto> applicationVersions;
-
-    private String lastestApplicationSemVer;
-
-    private boolean matchFound = false;
 
     public List<ApplicationVersionDto> getApplicationVersions() {
         if ( this.applicationVersions == null ) {
             this.applicationVersions = new ArrayList<>();
         }
         return this.applicationVersions;
+    }
+
+    @Override
+    public int getNumberOfVersions()
+    {
+        return ( this.getApplicationVersions() == null ) ? 0 : this.getApplicationVersions().size();
     }
 }

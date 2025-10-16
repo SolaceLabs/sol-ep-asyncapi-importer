@@ -21,6 +21,7 @@ import com.solace.ep.asyncapi.accessor.v2.AsyncApiAccessor;
 import com.solace.ep.asyncapi.importer.client.EventPortalClientApi;
 import com.solace.ep.asyncapi.importer.mapper.AsyncApiV2ToDto;
 import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
+import com.solace.ep.asyncapi.importer.util.EventPortalModelUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -201,6 +202,9 @@ public class AsyncApiImporter {
         );
 
         final DtoResultSet mappedResults = asyncApiToDtoMapper.mapAsyncApiToDto();
+        if (! EventPortalModelUtils.versionCountsValid(mappedResults)) {
+            throw new Exception("Input from the AsyncApi spec was found to be invalid -- EXITING");
+        }
 
         final EpImportOperator importOperator = new EpImportOperator(mappedResults, importClient);
 
@@ -232,4 +236,5 @@ public class AsyncApiImporter {
             }
         }
     }
+
 }

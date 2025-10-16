@@ -31,17 +31,9 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=true)
 public class SchemaVersionDto extends AbstractVersionDto {
     
-    private String id;
-
     private String schemaId;
 
-    private String version;
-
-    private String displayName;
-
     private String content;
-
-    private String stateId;
 
     private String type = "schemaVersion";
 

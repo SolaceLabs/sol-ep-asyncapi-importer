@@ -3,10 +3,22 @@ package com.solace.ep.asyncapi.importer;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import com.solace.ep.asyncapi.importer.helper.HelperFunctions;
+import com.solace.ep.asyncapi.importer.model.dto.AbstractDtoObject;
+import com.solace.ep.asyncapi.importer.model.dto.ApplicationDomainDto;
+import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
+import com.solace.ep.asyncapi.importer.model.dto.EnumDto;
+import com.solace.ep.asyncapi.importer.model.dto.EventDto;
+import com.solace.ep.asyncapi.importer.model.dto.SchemaDto;
 
 /**
  * Test aysyncapi import operations to 'test-importer' domain

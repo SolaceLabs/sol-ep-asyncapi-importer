@@ -56,6 +56,7 @@ public class AsyncApiV2ToDto {
 
     private ApplicationDomainDto mapApplicationDomain;
 
+    // TODO - Concurrent - Change to ConcurrentHashMaps
     private Map<String, EnumDto> mapEnums = new HashMap<>();
 
     private Map<String, SchemaDto> mapSchemas = new HashMap<>();

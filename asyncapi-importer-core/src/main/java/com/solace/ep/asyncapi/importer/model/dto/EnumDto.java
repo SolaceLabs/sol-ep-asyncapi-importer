@@ -23,20 +23,16 @@ import java.util.List;
 import com.solace.cloud.ep.designer.model.TopicAddressEnum;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /** 
  * Internal Format for Event Portal TopicAddressEnum Objects
  * TopicAddressEnum objects may contain versions
  */
 @Data
-public class EnumDto {
+@EqualsAndHashCode(callSuper=true)
+public class EnumDto extends AbstractDtoObject {
     
-    private String id;
-
-    private String applicationDomainId;
-
-    private String name;
-
     private Boolean shared;
 
     private String type = "enum";
@@ -45,13 +41,9 @@ public class EnumDto {
 
     private TopicAddressEnum epTopicAddressEnum;
 
-    private String lastestEnumSemVer = null;
-
-    private boolean matchFound = false;
-
     public EnumDto( String name, String applicationDomainId ) {
-        this.name = name;
-        this.applicationDomainId = applicationDomainId;
+        this.setName(name);
+        this.setApplicationDomainId(applicationDomainId);
     }
 
     public List<EnumVersionDto> getEnumVersions() {
@@ -59,6 +51,12 @@ public class EnumDto {
             enumVersions = new ArrayList<>();
         }
         return this.enumVersions;
+    }
+
+    @Override
+    public int getNumberOfVersions()
+    {
+        return ( this.getEnumVersions() == null ) ? 0 : this.getEnumVersions().size();
     }
     
 }

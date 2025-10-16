@@ -21,20 +21,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /** 
  * Internal Format for Event Portal SchemaObject Objects
  * SchemaObject objects may contain versions
  */
 @Data
-public class SchemaDto {
+@EqualsAndHashCode(callSuper=true)
+public class SchemaDto extends AbstractDtoObject {
   
-    private String id;
-
-    private String applicationDomainId;
-
-    private String name;
-
     private Boolean shared;
 
     private String schemaType;
@@ -45,13 +41,11 @@ public class SchemaDto {
 
     private List<SchemaVersionDto> schemaVersions;
 
-    private String lastestSchemaSemVer;
-
     private boolean matchFound = false;
 
     public SchemaDto( String name, String applicationDomainId ) {
-        this.name = name;
-        this.applicationDomainId = applicationDomainId;
+        this.setName(name);
+        this.setApplicationDomainId(applicationDomainId);
     }
     
     public List<SchemaVersionDto> getSchemaVersions() {
@@ -60,4 +54,11 @@ public class SchemaDto {
         }
         return schemaVersions;
     }
+
+    @Override
+    public int getNumberOfVersions()
+    {
+        return ( this.getSchemaVersions() == null ) ? 0 : this.getSchemaVersions().size();
+    }
+
 }

@@ -15,49 +15,76 @@
  * limitations under the License.
  */
 
-package com.solace.ep.asyncapi.accessor.v3;
+ package com.solace.ep.asyncapi.accessor.v3;
 
-import com.google.gson.JsonObject;
-
-import lombok.Getter;
-
-public class AsyncApiSchema extends AbstractAccessor {
-
-    @Getter
-    private String schemaName;
-
-    // private String contentType = null;
-
-    public AsyncApiSchema(final String schemaName, final JsonObject rootSpec, final JsonObject leafSpec)
-    {
-        super(rootSpec, leafSpec);
-        this.schemaName = schemaName;
-    }
-
-    // public AsyncApiSchema(
-    //     final String schemaName, 
-    //     final JsonObject rootSpec, 
-    //     final JsonObject leafSpec,
-    //     final String contentType
-    // )
-    // {
-    //     super(rootSpec, leafSpec);
-    //     this.schemaName = schemaName;
-    //     this.contentType = contentType;
-    // }
-    
-    
-
-    // public String getSchemaContentAsString() throws Exception
-    // {
-    //     // TODO - return schema based upon content type
-        
-    //     Gson gson = new Gson();
-    //     if (contentType.equalsIgnoreCase("application/json")) {
-    //         if (leafSpec.has("type")) {
-
-    //         }
-    //     }
-
-    // }
-}
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+ import com.google.gson.JsonObject;
+ 
+ import lombok.Getter;
+ 
+ public class AsyncApiSchema extends AbstractAccessor {
+ 
+     @Getter
+     private String schemaName;
+ 
+     private List<String> externalReferences;
+ 
+     // private String contentType = null;
+ 
+     public AsyncApiSchema(final String schemaName, final JsonObject rootSpec, final JsonObject leafSpec)
+     {
+         super(rootSpec, leafSpec);
+         this.schemaName = schemaName;
+     }
+ 
+     public AsyncApiSchema(final JsonObject rootSpec, final JsonObject leafSpec)
+     {
+         super(rootSpec, leafSpec);
+         this.schemaName = deriveSchemaNameFromContent(leafSpec);
+     }
+ 
+     public static String deriveSchemaNameFromContent(final JsonObject leafSpec)
+     {
+         // TODO - Implement this
+         return "";
+     }
+ 
+     public List<String> getExternalReferences()
+     {
+         // TODO Implement this
+         if (this.externalReferences == null) {
+             this.externalReferences = new ArrayList<>();
+         }
+         return this.externalReferences;
+     }
+ 
+     // public AsyncApiSchema(
+     //     final String schemaName, 
+     //     final JsonObject rootSpec, 
+     //     final JsonObject leafSpec,
+     //     final String contentType
+     // )
+     // {
+     //     super(rootSpec, leafSpec);
+     //     this.schemaName = schemaName;
+     //     this.contentType = contentType;
+     // }
+     
+     
+ 
+     // public String getSchemaContentAsString() throws Exception
+     // {
+     //     // TODO - return schema based upon content type
+         
+     //     Gson gson = new Gson();
+     //     if (contentType.equalsIgnoreCase("application/json")) {
+     //         if (leafSpec.has("type")) {
+ 
+     //         }
+     //     }
+ 
+     // }
+ }
+ 

@@ -34,21 +34,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=true)
 public class EventVersionDto extends AbstractVersionDto {
     
-    private String id;
-
     private String eventId;
-
-    private String version;
-
-    private String displayName;
 
     private String schemaVersionId;
 
     private String schemaPrimitiveType;
 
     private DeliveryDescriptor deliveryDescriptor;
-
-    private String stateId;
 
     private String type = "eventVersion";
 

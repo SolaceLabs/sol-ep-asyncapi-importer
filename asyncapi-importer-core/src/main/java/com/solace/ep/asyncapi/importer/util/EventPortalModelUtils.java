@@ -19,6 +19,7 @@ package com.solace.ep.asyncapi.importer.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -29,9 +30,17 @@ import com.solace.cloud.ep.designer.model.AddressLevel;
 import com.solace.cloud.ep.designer.model.DeliveryDescriptor;
 import com.solace.cloud.ep.designer.model.TopicAddressEnumValue;
 import com.solace.cloud.ep.designer.model.TopicAddressEnumVersion;
+import com.solace.ep.asyncapi.importer.model.dto.ApplicationDto;
+import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
+import com.solace.ep.asyncapi.importer.model.dto.EnumDto;
+import com.solace.ep.asyncapi.importer.model.dto.EventDto;
 import com.solace.ep.asyncapi.importer.model.dto.EventVersionDto;
 import com.solace.ep.asyncapi.importer.model.dto.EventVersionDto.TopicAddressLevel;
+import com.solace.ep.asyncapi.importer.model.dto.SchemaDto;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class EventPortalModelUtils {
     
     /**
@@ -50,6 +59,13 @@ public class EventPortalModelUtils {
         return gson.toJson(jsonElement);
     }
 
+    /**
+     * The purpose of this function is to reserialize JSON schemas with formatting
+     * for presentation in Event Portal
+     * @param jsonSchemaToReserialize
+     * @return JSON schema as string without whitespace
+     * @throws Exception
+     */
     public static String reserializeJsonAsPretty(
         final String jsonToReserialize
     ) throws Exception
@@ -226,5 +242,53 @@ public class EventPortalModelUtils {
         dd.setAddress(address);
 
         return dd;
+    }
+
+    /**
+     * Tests DtoResultSet object to ensure that there is exactly one version of each named object for import
+     * DtoResultSet object may contain multiple versions of each object when exported from Event Portal.
+     * But an AsyncApi spec can only have one version of each object - which is what is being tested here.
+     * @param resultSet
+     * @return True if counts of Versions of EP Objects for import are correct
+     */
+    public static boolean versionCountsValid(final DtoResultSet resultSet) throws Exception
+    {
+        final String ERROR_MSG = "Found [{}] versions for {} [{}]; each named object must have exactly one unique version for import";
+
+        boolean isValid = true;
+        try {
+            if (resultSet.getMapApplications().size() > 1) {
+                log.error("More than 1 applications found in result set; not valid for import to EP");
+                isValid = false;
+            }
+            for (Map.Entry<String, ApplicationDto> entry : resultSet.getMapApplications().entrySet()) {
+                if (entry.getValue().getNumberOfVersions() != 1) {
+                    log.error(ERROR_MSG, entry.getValue().getNumberOfVersions(), "APPLICATION", entry.getKey());
+                    isValid = false;
+                }
+            }
+            for (Map.Entry<String, EnumDto> entry : resultSet.getMapEnums().entrySet()) {
+                if (entry.getValue().getNumberOfVersions() != 1) {
+                    log.error(ERROR_MSG, entry.getValue().getNumberOfVersions(), "Channel Parameter/Event Portal ENUM", entry.getKey());
+                    isValid = false;
+                }
+            }
+            for (Map.Entry<String, SchemaDto> entry : resultSet.getMapSchemas().entrySet()) {
+                if (entry.getValue().getNumberOfVersions() != 1) {
+                    log.error(ERROR_MSG, entry.getValue().getNumberOfVersions(), "SCHEMA", entry.getKey());
+                    isValid = false;
+                }
+            }
+            for (Map.Entry<String, EventDto> entry : resultSet.getMapEvents().entrySet()) {
+                if (entry.getValue().getNumberOfVersions() != 1) {
+                    log.error(ERROR_MSG, entry.getValue().getNumberOfVersions(), "Event Portal EVENT", entry.getKey());
+                    isValid = false;
+                }
+            }
+        } catch (Exception exc) {
+            log.error("EventPortalModelUtils.versionCountsValid -- Caught unexpected error: [{}] mapping AsyncApi spec", exc.getLocalizedMessage());
+            throw exc;
+        } 
+        return isValid;
     }
 }

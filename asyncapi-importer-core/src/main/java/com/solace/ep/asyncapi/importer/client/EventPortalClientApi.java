@@ -96,6 +96,7 @@ public class EventPortalClientApi {
     @Getter
     private ApplicationDomain applicationDomain;
 
+    // TODO - Concurrent - Change the cached values from single objects to ConcurrentHashMap<String(Id), Object>
     @Getter
     private SchemaVersion cachedLatestSchemaVersion;
 

@@ -17,46 +17,28 @@
 
 package com.solace.ep.asyncapi.importer.model.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-/** 
- * Internal Format for Event Portal Event Objects
- * Event objects may contain versions
+/**
+ * DTO is the internal working area to manage imports of Event Portal Objects
+ * AbstractDtoObject is the Base class for DTO objects
  */
 @Data
-@EqualsAndHashCode(callSuper=true)
-public class EventDto extends AbstractDtoObject {
-    
-    private Boolean shared;
+public abstract class AbstractDtoObject {
 
-    private String brokerType = "solace";
+    private String id;
 
-    private String type = "event";
+    private String name;
 
-    private List<EventVersionDto> eventVersions;
+    private String applicationDomainId;
+
+    private String latestSemVer;
 
     private boolean matchFound = false;
 
-    public EventDto( final String name, final String applicationDomainId ) {
-        this.setName(name);
-        this.setApplicationDomainId(applicationDomainId);
-    }
-
-    public List<EventVersionDto> getEventVersions() {
-        if ( this.eventVersions == null ) {
-            eventVersions = new ArrayList<>();
-        }
-        return eventVersions;
-    }
-    
-    @Override
     public int getNumberOfVersions()
     {
-        return ( this.getEventVersions() == null ) ? 0 : this.getEventVersions().size();
+        return 0;
     }
 
 }
