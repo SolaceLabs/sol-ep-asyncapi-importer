@@ -55,6 +55,10 @@ public class AsyncApiAccessor {
         this.root = asyncApiRoot;
     }
 
+    public AsyncApiAccessor( String asyncApi ) throws Exception {
+        this(parseAsyncApi(asyncApi));
+    }
+
     public static JsonObject parseAsyncApi( String asyncApi ) throws Exception {
 
         try {

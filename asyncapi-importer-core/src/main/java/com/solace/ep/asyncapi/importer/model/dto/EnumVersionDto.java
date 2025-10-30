@@ -34,19 +34,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=true)
 public class EnumVersionDto extends AbstractVersionDto {
     
-    private String id;
-
     private String enumId;
 
     private String description;
 
-    private String version;
-
-    private String displayName;
-
     private List<EnumValue> values;
-
-    private String stateId;
 
     private String type = "enumVersion";        // enumVersion
 

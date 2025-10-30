@@ -17,48 +17,28 @@
 
 package com.solace.ep.asyncapi.importer.model.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-/** 
- * Internal Format for Event Portal SchemaObject Objects
- * SchemaObject objects may contain versions
+/**
+ * DTO is the internal working area to manage imports of Event Portal Objects
+ * AbstractDtoObject is the Base class for DTO objects
  */
 @Data
-@EqualsAndHashCode(callSuper=true)
-public class SchemaDto extends AbstractDtoObject {
-  
-    private Boolean shared;
+public abstract class AbstractDtoObject {
 
-    private String schemaType;
+    private String id;
 
-    private String contentType;
+    private String name;
 
-    private String type = "schema";
+    private String applicationDomainId;
 
-    private List<SchemaVersionDto> schemaVersions;
+    private String latestSemVer;
 
     private boolean matchFound = false;
 
-    public SchemaDto( String name, String applicationDomainId ) {
-        this.setName(name);
-        this.setApplicationDomainId(applicationDomainId);
-    }
-    
-    public List<SchemaVersionDto> getSchemaVersions() {
-        if (this.schemaVersions == null) {
-            this.schemaVersions = new ArrayList<>();
-        }
-        return schemaVersions;
-    }
-
-    @Override
     public int getNumberOfVersions()
     {
-        return ( this.getSchemaVersions() == null ) ? 0 : this.getSchemaVersions().size();
+        return 0;
     }
 
 }

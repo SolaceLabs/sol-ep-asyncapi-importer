@@ -34,19 +34,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=true)
 public class ApplicationVersionDto extends AbstractVersionDto {
     
-    private String id;
-
     private String applicationId;
 
     private String description;
 
-    private String version;
-
-    private String displayName;
-
     private List<String> declaredProducedEventVersionIds;
 
-    private String stateId;
+    private List<String> declaredConsumedEventVersionIds;
 
     // Matched EP ApplicationVersion or latest EP ApplicationVersion
     private ApplicationVersion epApplicationVersion;
@@ -57,4 +51,12 @@ public class ApplicationVersionDto extends AbstractVersionDto {
         }
         return declaredProducedEventVersionIds;
     }
+
+    public List<String> getDeclaredConsumedEventVersionIds() {
+        if ( declaredConsumedEventVersionIds == null ) {
+            declaredConsumedEventVersionIds = new ArrayList<>();
+        }
+        return declaredConsumedEventVersionIds;
+    }
+    
 }

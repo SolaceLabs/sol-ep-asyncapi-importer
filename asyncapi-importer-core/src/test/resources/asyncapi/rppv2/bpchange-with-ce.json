@@ -1,0 +1,196 @@
+{
+    "asyncapi": "2.6.0",
+    "x-sap-catalog-spec-version": "1.0",
+    "info": {
+        "title": "SOLACE_FEEDER",
+        "version": "1.0.1",
+        "description": "SOLACE_FEEDER",
+        "x-origin": {
+            "vendor": "asapio"
+        }
+    },
+    "channels": {
+        "sap.com/businesspartner/change/V1/{country}/{city}/{street}/{type}/{businessPartnerID}": {
+            "parameters": {
+                "country": {
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                "city": {
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                "street": {
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                "businessPartnerID": {
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            },
+            "subscribe": {
+                "message": {
+                    "$ref": "#/components/messages/BUSINESS_PARTNER_CHANGE"
+                }
+            }
+        }
+    },
+    "components": {
+        "messages": {
+            "BUSINESS_PARTNER_CHANGE": {
+                "summary": "Event",
+                "description": "Business Partner as a flat structure",
+                "headers": {
+                    "properties": {
+                        "datacontenttype": {
+                            "const": "application/json"
+                        }
+                    }
+                },
+                "payload": {
+                    "$ref": "#/components/schemas/SAP_AEM_XX_BUSINESSPARTNER-3_FLAT"
+                }
+            }
+        },
+        "schemas": {
+            "SAP_AEM_XX_BUSINESSPARTNER-3_FLAT": {
+                "$schema": "http://json-schema.org/draft-07/schema",
+                "title": "/SAP_AEM/XX_BUSINESSPARTNER",
+                "description": "Business Partner as a flat structure",
+                "type": "object",
+                "properties": {
+                    "specversion": {
+                        "type": "string",
+                        "description": "The version of the CloudEvents specification",
+                        "maxLength": 20
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "Describes the type of event that occurred",
+                        "maxLength": 100
+                    },
+                    "source": {
+                        "type": "string",
+                        "description": "Identifies the origin of the event",
+                        "format": "uri",
+                        "maxLength": 200
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "A unique identifier for the event",
+                        "maxLength": 100
+                    },
+                    "time": {
+                        "type": "string",
+                        "description": "The timestamp of when the event occurred",
+                        "format": "date-time"
+                    },
+                    "datacontenttype": {
+                        "type": "string",
+                        "description": "The media type of the data payload",
+                        "maxLength": 100
+                    },
+                    "dataschema": {
+                        "type": "string",
+                        "description": "A URI that identifies the schema of the data payload",
+                        "format": "uri",
+                        "maxLength": 200
+                    },
+                    "subject": {
+                        "type": "string",
+                        "description": "Describes the subject of the event in the context of the event producer",
+                        "maxLength": 100
+                    },
+                    "data": {
+                        "type": "object",
+                        "description": "The event payload itself",
+                        "properties": {
+                            "businessPartner": {
+                                "type": "object",
+                                "properties": {
+                                    "partnerId": {
+                                        "type": "string",
+                                        "maxLength": 10
+                                    },
+                                    "validTo": {
+                                        "type": "number",
+                                        "maximum": 999999999999999
+                                    },
+                                    "addressNumber": {
+                                        "type": "string",
+                                        "maxLength": 10
+                                    },
+                                    "validFrom": {
+                                        "type": "number",
+                                        "maximum": 999999999999999
+                                    },
+                                    "businessPartnerType": {
+                                        "type": "string",
+                                        "maxLength": 1
+                                    },
+                                    "firstName": {
+                                        "type": "string",
+                                        "maxLength": 40
+                                    },
+                                    "lastName": {
+                                        "type": "string",
+                                        "maxLength": 40
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "maxLength": 40
+                                    },
+                                    "postalCode": {
+                                        "type": "string",
+                                        "maxLength": 10
+                                    },
+                                    "street": {
+                                        "type": "string",
+                                        "maxLength": 60
+                                    },
+                                    "houseNumber": {
+                                        "type": "string",
+                                        "maxLength": 10
+                                    },
+                                    "country": {
+                                        "type": "string",
+                                        "maxLength": 3
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "maxLength": 40
+                                    },
+                                    "telephone": {
+                                        "type": "string",
+                                        "maxLength": 15
+                                    }
+                                },
+                                "required": [
+                                    "partnerId",
+                                    "validTo",
+                                    "addressNumber"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "specversion",
+                    "type",
+                    "source",
+                    "id"
+                ]
+            }
+        }
+    }
+}

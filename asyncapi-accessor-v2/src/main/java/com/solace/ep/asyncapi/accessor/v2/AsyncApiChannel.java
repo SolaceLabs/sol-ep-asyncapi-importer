@@ -103,14 +103,16 @@ public class AsyncApiChannel {
                     .asMap();
 
                 for ( String parmName : parms.keySet() ) {
-                    JsonElement parmElement = parms.get(parmName);
                     String parameterName = null;
-                    if ( parmElement.getClass().isAssignableFrom( JsonObject.class ) ) {
-                        JsonObject parmObject = ( JsonObject )parmElement;
-                        if ( parmObject.has(EpFieldConstants.EP_PARAMETER_NAME) ) {
-                            parameterName = parmObject.get( EpFieldConstants.EP_PARAMETER_NAME ).getAsString();
-                        }
-                    }
+                    // TODO: Re-evaluate this logic and whether it is needed, EP parameter name can be different from parameter token
+                    //       which causes a logical problem
+                    // JsonElement parmElement = parms.get(parmName);
+                    // if ( parmElement.getClass().isAssignableFrom( JsonObject.class ) ) {
+                    //     JsonObject parmObject = ( JsonObject )parmElement;
+                    //     if ( parmObject.has(EpFieldConstants.EP_PARAMETER_NAME) ) {
+                    //         parameterName = parmObject.get( EpFieldConstants.EP_PARAMETER_NAME ).getAsString();
+                    //     }
+                    // }
                     if ( parameterName == null ) {
                         parameterName = parmName;
                     }
@@ -142,11 +144,11 @@ public class AsyncApiChannel {
             return null;
         }
         if ( ! asyncApiChannel.has( operationType ) ) {
-            return null;
+            return Collections.emptyList();
         }
         JsonObject operation = asyncApiChannel.getAsJsonObject(operationType);
         if ( ! operation.has(AsyncApiFieldConstants.OP_MESSAGE) ) {
-            return null;
+            return Collections.emptyList();
         }
         JsonObject message = operation.getAsJsonObject(AsyncApiFieldConstants.OP_MESSAGE);
         if ( message.has(AsyncApiFieldConstants.API_$REF) ) {

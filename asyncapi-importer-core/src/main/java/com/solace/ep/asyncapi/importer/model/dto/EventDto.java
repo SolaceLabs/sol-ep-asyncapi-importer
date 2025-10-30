@@ -21,21 +21,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /** 
  * Internal Format for Event Portal Event Objects
  * Event objects may contain versions
  */
 @Data
-public class EventDto {
+@EqualsAndHashCode(callSuper=true)
+public class EventDto extends AbstractDtoObject {
     
-    private String id;
-
-    private String name;
-
     private Boolean shared;
-
-    private String applicationDomainId;
 
     private String brokerType = "solace";
 
@@ -43,13 +39,15 @@ public class EventDto {
 
     private List<EventVersionDto> eventVersions;
 
-    private String latestEventSemVer;
+    private Boolean consumedEvent = false;
+
+    private Boolean publishedEvent = false;
 
     private boolean matchFound = false;
 
     public EventDto( final String name, final String applicationDomainId ) {
-        this.name = name;
-        this.applicationDomainId = applicationDomainId;
+        this.setName(name);
+        this.setApplicationDomainId(applicationDomainId);
     }
 
     public List<EventVersionDto> getEventVersions() {
@@ -57,6 +55,12 @@ public class EventDto {
             eventVersions = new ArrayList<>();
         }
         return eventVersions;
+    }
+    
+    @Override
+    public int getNumberOfVersions()
+    {
+        return ( this.getEventVersions() == null ) ? 0 : this.getEventVersions().size();
     }
 
 }

@@ -39,4 +39,6 @@ public class DtoResultSet {
 
     private Map<String, EventDto> mapEvents;
 
+    private Map<String, EventApiDto> mapEventApis;
+
 }

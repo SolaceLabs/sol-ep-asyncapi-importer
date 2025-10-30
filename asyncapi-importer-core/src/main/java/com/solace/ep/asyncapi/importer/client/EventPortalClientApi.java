@@ -29,6 +29,7 @@ import com.solace.cloud.ep.designer.ApiClient;
 import com.solace.cloud.ep.designer.api.ApplicationDomainsApi;
 import com.solace.cloud.ep.designer.api.ApplicationsApi;
 import com.solace.cloud.ep.designer.api.EnumsApi;
+import com.solace.cloud.ep.designer.api.EventApisApi;
 import com.solace.cloud.ep.designer.api.EventsApi;
 import com.solace.cloud.ep.designer.api.SchemasApi;
 import com.solace.cloud.ep.designer.auth.HttpBearerAuth;
@@ -43,6 +44,12 @@ import com.solace.cloud.ep.designer.model.ApplicationVersionsResponse;
 import com.solace.cloud.ep.designer.model.ApplicationsResponse;
 import com.solace.cloud.ep.designer.model.DeliveryDescriptor;
 import com.solace.cloud.ep.designer.model.Event;
+import com.solace.cloud.ep.designer.model.EventApi;
+import com.solace.cloud.ep.designer.model.EventApiResponse;
+import com.solace.cloud.ep.designer.model.EventApiVersion;
+import com.solace.cloud.ep.designer.model.EventApiVersionResponse;
+import com.solace.cloud.ep.designer.model.EventApiVersionsResponse;
+import com.solace.cloud.ep.designer.model.EventApisResponse;
 import com.solace.cloud.ep.designer.model.EventResponse;
 import com.solace.cloud.ep.designer.model.EventVersion;
 import com.solace.cloud.ep.designer.model.EventVersionResponse;
@@ -96,6 +103,7 @@ public class EventPortalClientApi {
     @Getter
     private ApplicationDomain applicationDomain;
 
+    // TODO - Concurrent - Change the cached values from single objects to ConcurrentHashMap<String(Id), Object>
     @Getter
     private SchemaVersion cachedLatestSchemaVersion;
 
@@ -107,6 +115,9 @@ public class EventPortalClientApi {
 
     @Getter
     private ApplicationVersion cachedLatestApplicationVersion;
+
+    @Getter
+    private EventApiVersion cachedLatestEventApiVersion;
 
     /**
      * Constructs a new EventPortalApiClientGet Object and retrieves ApplicationDomain for appDomain name parameter passed
@@ -346,6 +357,110 @@ public class EventPortalClientApi {
         return null;
     }
 
+    public ApplicationVersion getApplicationVersionByAllEvents(
+        final String appId,
+        final List<String> producedEventVersionIds,
+        final List<String> consumedEventVersionIds
+    ) throws Exception
+    {
+        ApplicationsApi applicationsApi = new ApplicationsApi(apiClient);
+
+        this.cachedLatestApplicationVersion = null;
+
+        try {
+            int maxPages = 1;
+            for (int page = 1; page <= maxPages; page++) {
+                ApplicationVersionsResponse response = applicationsApi.getApplicationVersions(PAGE_SZ_VERSION, page, Set.of(appId), null, null, null);  // EventPortalModelUtils.OPEN_OBJECT_STATES);
+
+                if (response.getData().isEmpty()) {
+                    break;
+                }
+                if (page == 1 && response.getMeta().getPagination().getNextPage() != null) {
+                    maxPages = response.getMeta().getPagination().getTotalPages();
+                }
+                if (page == 1 && ! response.getData().isEmpty() ) {
+                    this.cachedLatestApplicationVersion = response.getData().get(0);
+                }
+
+                for (ApplicationVersion appVersion : response.getData()) {
+                    if (EventPortalModelUtils.valuesListsMatch(producedEventVersionIds, appVersion.getDeclaredProducedEventVersionIds())
+                        && EventPortalModelUtils.valuesListsMatch(consumedEventVersionIds, appVersion.getDeclaredConsumedEventVersionIds())) {
+                        return appVersion;
+                    }
+                }
+            }
+        } catch (Exception exc) {
+            log.error("EventPortalClientApi.getApplicationVersionByAllEvents", exc);
+            throw exc;
+        }
+
+        return null;
+    }
+
+    public EventApi getEventApiByName(final String eventApiName) throws Exception
+    {
+        EventApisApi eventApisApi = new EventApisApi(apiClient);
+
+        try {
+            EventApisResponse eventApisResponse = eventApisApi.getEventApis(PAGE_SZ_OBJECT, 1, eventApiName, null, appDomainId, null, null, null, null, null, null, null);
+            if (eventApisResponse.getData().isEmpty()) {
+                log.debug("Event API name = [{}] not found", eventApiName);
+                return null;
+            }
+            if (eventApisResponse.getData().size() > 1) {
+                // Should not happen
+                log.error("Event API name = [{}] returned > 1 event api", eventApiName);
+                return null;
+            }
+            return eventApisResponse.getData().get(0);
+
+        } catch (Exception exc) {
+            log.error("Error retrieving event API [{}] EventPortalClientApi.getEventApiByName", eventApiName, exc);
+            throw exc;
+        }
+    }
+
+    public EventApiVersion getEventApiVersionByAllEvents(
+        final String eventApiId,
+        final List<String> producedEventVersionIds,
+        final List<String> consumedEventVersionIds
+    ) throws Exception
+    {
+
+        EventApisApi eventApisApi = new EventApisApi(apiClient);
+
+        this.cachedLatestEventApiVersion = null;
+
+        try {
+            int maxPages = 1;
+            for (int page = 1; page <= maxPages; page++) {
+
+                EventApiVersionsResponse response = eventApisApi.getEventApiVersions(PAGE_SZ_VERSION, page, Set.of(eventApiId), null, null, null, null);  // EventPortalModelUtils.OPEN_OBJECT_STATES);
+                if (response.getData().isEmpty()) {
+                    break;
+                }
+                if (page == 1 && response.getMeta().getPagination().getNextPage() != null) {
+                    maxPages = response.getMeta().getPagination().getTotalPages();
+                }
+                if (page == 1 && ! response.getData().isEmpty() ) {
+                    this.cachedLatestEventApiVersion = response.getData().get(0);
+                }
+
+                for (EventApiVersion eventApiVersion : response.getData()) {
+                    if (EventPortalModelUtils.valuesListsMatch(producedEventVersionIds, eventApiVersion.getProducedEventVersionIds())
+                        && EventPortalModelUtils.valuesListsMatch(consumedEventVersionIds, eventApiVersion.getConsumedEventVersionIds())) {
+                        return eventApiVersion;
+                    }
+                }
+            }
+        } catch (Exception exc) {
+            log.error("EventPortalClientApi.getEventApiVersionByAllEvents", exc);
+            throw exc;
+        }
+
+        return null;
+    }
+
     /**
      * Gets a map of all Event IDs --> Event Names in the application domain associated with this client instance.
      * Calls Event Portal REST API
@@ -438,6 +553,33 @@ public class EventPortalClientApi {
         return appIds;
     }
 
+    public Map<String, String> getAllEventApiIds() throws Exception
+    {
+        final EventApisApi eventApisApi = new EventApisApi(apiClient);
+        final Map<String, String> eventApiIds = new HashMap<>();
+
+        try {
+            int maxPages = 1;
+            for (int page = 1; page <= maxPages; page++) {
+                EventApisResponse response = eventApisApi.getEventApis(PAGE_SZ_OBJECT, page, null, null, appDomainId, null, null, null, null, null, null, null);
+
+                if (response.getData().isEmpty()) {
+                    break;
+                }
+                if (page == 1 && response.getMeta().getPagination().getNextPage() != null) {
+                    maxPages = response.getMeta().getPagination().getTotalPages();
+                }
+                response.getData().forEach( api -> {
+                    eventApiIds.put(api.getId(), api.getName());
+                } );
+            }
+        } catch (Exception exc) {
+            log.error("EventPortalClientApi.getAllEventApiIds", exc);
+            throw exc;
+        }
+        return eventApiIds;
+    }
+
     /**
      * Retrieve the last ApplicationVersion object associated with an applicationId
      * Calls Event Portal REST API
@@ -460,6 +602,25 @@ public class EventPortalClientApi {
             }
         } catch (Exception exc) {
             log.error("EventPortalClientApi.getLastApplicationVersion", exc);
+            throw exc;
+        }
+    }
+
+    public EventApiVersion getLastEventApiVersion(
+        final String eventApiId
+    ) throws Exception
+    {
+        final EventApisApi eventApisApi = new EventApisApi(apiClient);
+
+        try {
+            EventApiVersionsResponse response = eventApisApi.getEventApiVersions(1, 1, Set.of(eventApiId), null, null, null, null);
+            if (response.getData().isEmpty()) {
+                return null;
+            } else {
+                return response.getData().get(0);
+            }
+        } catch (Exception exc) {
+            log.error("EventPortalClientApi.getLastEventApiVersion", exc);
             throw exc;
         }
     }
@@ -941,6 +1102,26 @@ public class EventPortalClientApi {
         }
     }
 
+    public EventApi createEventApiObject(
+        final String appName
+    ) throws Exception
+    {
+        final EventApisApi eventApi = new EventApisApi(apiClient);
+
+        final EventApi eventApiObject = new EventApi();
+        eventApiObject.setName(appName);
+        eventApiObject.setApplicationDomainId(this.appDomainId);
+        eventApiObject.setBrokerType(EventApi.BrokerTypeEnum.SOLACE);
+
+        try {
+            EventApiResponse response = eventApi.createEventApi(eventApiObject);
+            return response.getData();
+        } catch (Exception exc) {
+            log.error("EventPortalClientApi.createEventApiObject - Error creating EventApi: {}", appName, exc);
+            throw exc;
+        }
+    }
+
     /**
      * Create a new application version
      * @param appId - appId where the application version child should be created
@@ -954,6 +1135,7 @@ public class EventPortalClientApi {
         final String appId,
         final String appName,
         final List<String> declaredPublishedEventIds,
+        final List<String> declaredConsumedEventIds,
         final String lastSemVer
     ) throws Exception
     {
@@ -962,6 +1144,7 @@ public class EventPortalClientApi {
         final ApplicationVersion appVersion = new ApplicationVersion();
         appVersion.setApplicationId(appId);
         appVersion.setDeclaredProducedEventVersionIds(declaredPublishedEventIds);
+        appVersion.setDeclaredConsumedEventVersionIds(declaredConsumedEventIds);
         appVersion.setDescription("Application version created by AsyncApi import for Application: " + appName);
         appVersion.setVersion(incrementSemVer(lastSemVer));
         appVersion.setEndOfLifeDate(null);
@@ -975,6 +1158,32 @@ public class EventPortalClientApi {
         }
     }
 
+    public EventApiVersion createEventApiVersion(
+        final String eventApiId,
+        final String eventApiName,
+        final List<String> declaredPublishedEventIds,
+        final List<String> declaredConsumedEventIds,
+        final String lastSemVer
+    ) throws Exception
+    {
+        final EventApisApi eventApi = new EventApisApi(apiClient);
+
+        final EventApiVersion eventApiVersion = new EventApiVersion();
+        eventApiVersion.setEventApiId(eventApiId);
+        eventApiVersion.setProducedEventVersionIds(declaredPublishedEventIds);
+        eventApiVersion.setConsumedEventVersionIds(declaredConsumedEventIds);
+        eventApiVersion.setDescription("EventApi version created by AsyncApi import for EventApi: " + eventApiName);
+        eventApiVersion.setVersion(incrementSemVer(lastSemVer));
+
+        try {
+            EventApiVersionResponse response = eventApi.createEventApiVersion(eventApiVersion);
+            return response.getData();
+        } catch (Exception exc) {
+            log.error("EventPortalClientApi.createEventApiVersion - Error creating application version for EventApi: {}", eventApiName, exc);
+            throw exc;
+        }
+    }
+
     /**
      * Update the declaredPublishedEvents associated with an application version
      * @param appVersionId
@@ -984,7 +1193,8 @@ public class EventPortalClientApi {
      */
     public ApplicationVersion updateApplicationVersion(
         final String appVersionId,
-        final List<String> declaredPublishedEvents
+        final List<String> declaredPublishedEvents,
+        final List<String> declaredConsumedEvents
     ) throws Exception
     {
         final ApplicationsApi appApi = new ApplicationsApi(apiClient);
@@ -993,12 +1203,40 @@ public class EventPortalClientApi {
         declaredPublishedEvents.forEach( item -> {
             appVersion.addDeclaredProducedEventVersionIdsItem(item);
         });
+        declaredConsumedEvents.forEach( item -> {
+            appVersion.addDeclaredConsumedEventVersionIdsItem(item);
+        });
 
         try {
             ApplicationVersionResponse response = appApi.updateApplicationVersion(appVersionId, appVersion, null, null);
             return response.getData();
         } catch (Exception exc) {
             log.error("EventPortalClientApi.updateApplicationVersion - Error updating application version", exc);
+            throw exc;
+        }
+    }
+
+    public EventApiVersion updateEventApiVersion(
+        final String eventApiVersionId,
+        final List<String> declaredPublishedEvents,
+        final List<String> declaredConsumedEvents
+    ) throws Exception
+    {
+        final EventApisApi eventApi = new EventApisApi(apiClient);
+
+        final EventApiVersion eventApiVersion = new EventApiVersion();
+        declaredPublishedEvents.forEach( item -> {
+            eventApiVersion.addProducedEventVersionIdsItem(item);
+        });
+        declaredConsumedEvents.forEach( item -> {
+            eventApiVersion.addConsumedEventVersionIdsItem(item);
+        });
+
+        try {
+            EventApiVersionResponse response = eventApi.updateEventApiVersion(eventApiVersionId, eventApiVersion);
+            return response.getData();
+        } catch (Exception exc) {
+            log.error("EventPortalClientApi.updateEventApiVersion - Error updating event API version", exc);
             throw exc;
         }
     }

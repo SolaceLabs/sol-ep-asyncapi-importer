@@ -47,8 +47,9 @@ public class AsyncApiImport {
         Option opEpToken = new Option("t", "ep-token", true, "Event Portal bearer token\n");
         Option opBaseUrl = new Option("u", "ep-base-url", true, "Over-ride Base URL to call Event Portal\nUse to call Solace Cloud API outside\n of US/CAN region\n");
         Option opHelp = new Option("h", "help", false, "Display Help\n");
-        Option opNoCascadeUpdate = new Option("z", "no-cascade", false, "Disable cascade update of objects\nSee documentation for more info\n");
-        Option opImportEventsOnly = new Option("e", "events-only", false, "Import Events and Schemas only\nDo not import Applications");
+        Option opCascadeUpdate = new Option("z", "cascade-update", false, "Cascade update linked objects\nSee documentation for more info\n");
+        Option opImportEventApi = new Option("e", "import-eventapi", false, "Create an Event API in Event Portal with the events in the AsyncAPI spec");
+        Option opImportApplication = new Option("n", "import-application", false, "Create an Application template in Event Portal with the events in the AsyncAPI spec");
 
         Option opVersionMajor = new Option("m", "version-major", false, "Increment MAJOR version of SemVer (DEFAULT)\n");
         Option opVersionMinor = new Option("i", "version-minor", false, "Increment MINOR version of SemVer\n");
@@ -58,19 +59,23 @@ public class AsyncApiImport {
         opAppDomain.setRequired(true);
         opEpToken.setRequired(true);
 
-        OptionGroup opGroupVersion = new OptionGroup();
-        opGroupVersion.addOption(opVersionMajor).addOption(opVersionMinor).addOption(opVersionPatch);
+        OptionGroup opGroupVersion = 
+            new OptionGroup()
+                .addOption(opVersionMajor)
+                .addOption(opVersionMinor)
+                .addOption(opVersionPatch);
 
-        Options options = new Options();
-        options
-            .addOption(opAsyncapi)
-            .addOption(opAppDomain)
-            .addOption(opEpToken)
-            .addOption(opBaseUrl)
-            .addOptionGroup(opGroupVersion)
-            .addOption(opHelp)
-            .addOption(opNoCascadeUpdate)
-            .addOption(opImportEventsOnly);
+        Options options = 
+            new Options()
+                .addOption(opAsyncapi)
+                .addOption(opAppDomain)
+                .addOption(opEpToken)
+                .addOption(opBaseUrl)
+                .addOptionGroup(opGroupVersion)
+                .addOption(opHelp)
+                .addOption(opCascadeUpdate)
+                .addOption(opImportApplication)
+                .addOption(opImportEventApi);
 
         // Collect Option values
         String appDomainName;
@@ -78,8 +83,9 @@ public class AsyncApiImport {
         String epToken;
         String epBaseUrl;
         String versionStrategy;
-        boolean disableCascadeUpdate;
-        boolean disableApplicationImport;
+        boolean cascadeUpdate;
+        boolean importApplication;
+        boolean importEventApi;
         
         // Parse out options
         try {
@@ -107,8 +113,9 @@ public class AsyncApiImport {
             } else {
                 versionStrategy = null;
             }
-            disableCascadeUpdate = commandLine.hasOption("z");
-            disableApplicationImport = commandLine.hasOption("e");
+            cascadeUpdate = commandLine.hasOption("z");
+            importApplication = commandLine.hasOption("n");
+            importEventApi = commandLine.hasOption("e");
         } catch (ParseException parseExc) {
             System.out.println("Error parsing out options: " + parseExc.getLocalizedMessage() + "\n");
             displayHelp(options);
@@ -133,8 +140,9 @@ public class AsyncApiImport {
                 asyncApiContent, 
                 epBaseUrl, 
                 versionStrategy, 
-                disableCascadeUpdate,
-                disableApplicationImport
+                cascadeUpdate,
+                importApplication,
+                importEventApi
             );
             
             System.out.println(

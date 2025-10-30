@@ -23,6 +23,8 @@ import com.solace.ep.asyncapi.importer.model.dto.ApplicationVersionDto;
 import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
 import com.solace.ep.asyncapi.importer.model.dto.EnumDto;
 import com.solace.ep.asyncapi.importer.model.dto.EnumVersionDto;
+import com.solace.ep.asyncapi.importer.model.dto.EventApiDto;
+import com.solace.ep.asyncapi.importer.model.dto.EventApiVersionDto;
 import com.solace.ep.asyncapi.importer.model.dto.EventDto;
 import com.solace.ep.asyncapi.importer.model.dto.EventVersionDto;
 import com.solace.ep.asyncapi.importer.model.dto.SchemaDto;
@@ -33,15 +35,22 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import com.solace.cloud.ep.designer.model.Application;
 import com.solace.cloud.ep.designer.model.ApplicationVersion;
 import com.solace.cloud.ep.designer.model.Event;
+import com.solace.cloud.ep.designer.model.EventApi;
+import com.solace.cloud.ep.designer.model.EventApiVersion;
 import com.solace.cloud.ep.designer.model.EventVersion;
 import com.solace.cloud.ep.designer.model.SchemaObject;
 import com.solace.cloud.ep.designer.model.SchemaVersion;
@@ -50,24 +59,68 @@ import com.solace.cloud.ep.designer.model.TopicAddressEnumVersion;
 
 @Slf4j
 public class EpImportOperator {
+
+    private static final int DEFAULT_IMPORTER_THREADPOOL_SZ = 8;
+
+    public static final String OPERATOR_ID_PREFIX = "ImportOp";
+
+    private static int defaultOperationIdCounter = 1;
     
     @Getter
     private DtoResultSet dtoResultSet;
 
     private EventPortalClientApi epClient;
 
-    private Map<String, String> incrementedEnumVersions = new HashMap<>();
+    private Map<String, String> incrementedEnumVersions = new ConcurrentHashMap<>();
 
-    private Map<String, String> incrementedSchemaVersions = new HashMap<>();
+    private Map<String, String> incrementedSchemaVersions = new ConcurrentHashMap<>();
 
-    private Map<String, String> incrementedEventVersions = new HashMap<>();
+    private Map<String, String> incrementedEventVersions = new ConcurrentHashMap<>();
+
+    private final ExecutorService executor;
+
+    private final int operationId;
+
+    public static String getOperatorIdPrefix(int operationId) {
+        return OPERATOR_ID_PREFIX + operationId;
+    }
+
+    public EpImportOperator(
+        DtoResultSet dtoResultSetToUpdate,
+        EventPortalClientApi client,
+        final Integer operationId) throws Exception
+    {
+        this.epClient = client;
+        this.dtoResultSet = dtoResultSetToUpdate;
+        this.operationId = operationId != null ? operationId : defaultOperationIdCounter++;
+        this.executor = Executors.newFixedThreadPool(
+            DEFAULT_IMPORTER_THREADPOOL_SZ, 
+            r -> {
+                Thread t = new Thread(r);
+                t.setName(OPERATOR_ID_PREFIX + this.operationId + "-" + t.getId());
+                t.setDaemon(false);
+                return t;
+            }
+        );
+    }
 
     public EpImportOperator(
         DtoResultSet dtoResultSetToUpdate,
         EventPortalClientApi client) throws Exception
     {
-        this.epClient = client;
-        this.dtoResultSet = dtoResultSetToUpdate;
+        this(dtoResultSetToUpdate, client, null);
+    }
+
+    public void shutdown() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(12, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     public void matchEpApplications() throws Exception
@@ -89,6 +142,16 @@ public class EpImportOperator {
         dtoResultSet.getMapApplications().forEach( ( appName, appDto ) -> {
             appDto.getApplicationVersions().forEach( appVersionDto -> {
                 appVersionDto.setDeclaredProducedEventVersionIds(getPublishedEventIdsFromResults());
+                appVersionDto.setDeclaredConsumedEventVersionIds(getConsumedEventIdsFromResults());
+            } );
+        } );
+    }
+
+    private void updateEventApiIdentifiers() {
+        dtoResultSet.getMapEventApis().forEach( ( apiName, apiDto ) -> {
+            apiDto.getEventApiVersions().forEach( apiVersionDto -> {
+                apiVersionDto.setProducedEventVersionIds(getConsumedEventIdsFromResults());
+                apiVersionDto.setConsumedEventVersionIds(getPublishedEventIdsFromResults());
             } );
         } );
     }
@@ -122,10 +185,11 @@ public class EpImportOperator {
         final String appId
     ) throws Exception
     {
-        final ApplicationVersion epAppVersion = epClient.getApplicationVersionByProducedEvents(
+        // final ApplicationVersion epAppVersion = epClient.getApplicationVersionByProducedEvents(
+        final ApplicationVersion epAppVersion = epClient.getApplicationVersionByAllEvents(
             appId, 
-            // getPublishedEventIdsFromResults()
-            appVersionDto.getDeclaredProducedEventVersionIds()
+            appVersionDto.getDeclaredProducedEventVersionIds(),
+            appVersionDto.getDeclaredConsumedEventVersionIds()
         );
         if (epAppVersion != null) {
             appVersionDto.setMatchFound(true);
@@ -153,17 +217,101 @@ public class EpImportOperator {
     private List<String> getPublishedEventIdsFromResults() {
         final Set<String> publishedEventIds = new HashSet<>();
         dtoResultSet.getMapEvents().forEach( ( eventName, eventValue ) -> {
-            eventValue.getEventVersions().forEach( eventVersion -> {
-                publishedEventIds.add(eventVersion.getId());
-            } );
+            if (eventValue.getPublishedEvent()) {
+                eventValue.getEventVersions().forEach( eventVersion -> {
+                    publishedEventIds.add(eventVersion.getId());
+                } );
+            }
         } );
         return new ArrayList<>(publishedEventIds);
     }
 
+    private List<String> getConsumedEventIdsFromResults() {
+        final Set<String> consumedEventIds = new HashSet<>();
+        dtoResultSet.getMapEvents().forEach( ( eventName, eventValue ) -> {
+            if (eventValue.getConsumedEvent()) {
+                eventValue.getEventVersions().forEach( eventVersion -> {
+                    consumedEventIds.add(eventVersion.getId());
+                } );
+            }
+        } );
+        return new ArrayList<>(consumedEventIds);
+    }
+
+    public void matchEpEventApis() throws Exception {
+        updateEventApiIdentifiers();
+
+        for (Map.Entry<String, EventApiDto> apiEntry : dtoResultSet.getMapEventApis().entrySet()) {
+            matchToEpEventApiObject(apiEntry.getKey(), apiEntry.getValue());
+        }
+    }
+
+    private void matchToEpEventApiObject(
+        final String eventApiName,
+        final EventApiDto apiDto
+    ) throws Exception
+    {
+        final EventApi epEventApi = epClient.getEventApiByName(eventApiName);
+        if ( epEventApi == null ) {
+            apiDto.setMatchFound(false);
+            log.info("Event API [{}] not found in Event Portal", eventApiName);
+            return;
+        }
+        apiDto.setMatchFound(true);
+        log.info("Event API [{}] was found to exist", eventApiName);
+        final String eventApiId = epEventApi.getId();
+        apiDto.setId(eventApiId);
+        apiDto.setApplicationDomainId(epClient.getAppDomainId());
+        // apiDto.setApplicationType(epEventApi.getType());
+        apiDto.setBrokerType(epEventApi.getBrokerType().getValue());
+
+        for ( EventApiVersionDto apiVersionDto : apiDto.getEventApiVersions()) {
+            matchToEpEventApiVersion(apiVersionDto, eventApiId);
+        }
+    }
+
+    private void matchToEpEventApiVersion(
+        final EventApiVersionDto apiVersionDto,
+        final String eventApiId
+    ) throws Exception
+    {
+        // final ApplicationVersion epAppVersion = epClient.getApplicationVersionByProducedEvents(
+        final EventApiVersion epEventApiVersion = epClient.getEventApiVersionByAllEvents(
+            eventApiId,
+            apiVersionDto.getProducedEventVersionIds(),
+            apiVersionDto.getConsumedEventVersionIds()
+        );
+        if (epEventApiVersion != null) {
+            apiVersionDto.setMatchFound(true);
+            apiVersionDto.setEpEventApiVersion(epEventApiVersion);
+            log.info("Event API version [{}] found in Event Portal", epEventApiVersion.getVersion());
+        } else {
+            log.info("Matching Event API version not found in Event Portal");
+            if (epClient.getCachedLatestEventApiVersion() != null) {
+                apiVersionDto.setEpEventApiVersion(epClient.getCachedLatestEventApiVersion());
+                apiVersionDto.setLastestVersionFound(true);
+                if (apiVersionDto.getEpEventApiVersion().getStateId().contentEquals("1")) {
+                    apiVersionDto.setLatestVersionFoundInDraftState(true);
+                }
+            }
+        }
+    }
+
     public void matchEpSchemas() throws Exception
     {
+        List<Future<?>> futures = new ArrayList<>();
         for (Map.Entry<String, SchemaDto> schemaEntry : dtoResultSet.getMapSchemas().entrySet()) {
-            matchToEpSchemaObject(schemaEntry.getKey(), schemaEntry.getValue());
+            futures.add(executor.submit(() -> {
+                try {
+                    matchToEpSchemaObject(schemaEntry.getKey(), schemaEntry.getValue());
+                } catch (Exception e) {
+                    log.error("Failed to match schema {}", schemaEntry.getKey(), e);
+                }
+            }));
+        }
+
+        for (Future<?> future : futures) {
+            future.get(); // wait for each task to complete
         }
     }
 
@@ -213,8 +361,19 @@ public class EpImportOperator {
 
     public void matchEpEnums() throws Exception
     {
+        List<Future<?>> futures = new ArrayList<>();
         for (Map.Entry<String, EnumDto> enumEntry : dtoResultSet.getMapEnums().entrySet()) {
-            matchToEpEnumObject(enumEntry.getKey(), enumEntry.getValue());
+            futures.add(executor.submit(() -> {
+                try {
+                    matchToEpEnumObject(enumEntry.getKey(), enumEntry.getValue());
+                } catch (Exception e) {
+                    log.error("Failed to match enum {}", enumEntry.getKey(), e);
+                }
+            }));
+        }
+
+        for (Future<?> future : futures) {
+            future.get(); // wait for each task to complete
         }
     }
 
@@ -266,8 +425,19 @@ public class EpImportOperator {
         updateEventIdentifiers();   // Must update events + event versions with schemaVersionIds
                                     // and enumVersionIds discovered or created earlier
 
+        List<Future<?>> futures = new ArrayList<>();
         for (Map.Entry<String, EventDto> eventEntry : dtoResultSet.getMapEvents().entrySet() ) {
-            matchToEpEventObject(eventEntry.getKey(), eventEntry.getValue());
+            futures.add(executor.submit(() -> {
+                try {
+                    matchToEpEventObject(eventEntry.getKey(), eventEntry.getValue());
+                } catch (Exception e) {
+                    log.error("Failed to match event {}", eventEntry.getKey(), e);
+                }
+            }));
+        }
+
+        for (Future<?> future : futures) {
+            future.get(); // wait for each task to complete
         }
     }
 
@@ -357,7 +527,7 @@ public class EpImportOperator {
         }
         for (ApplicationVersionDto appVersionDto : appDto.getApplicationVersions()) {
             if (appVersionDto.isLastestVersionFound()) {
-                appDto.setLastestApplicationSemVer(appVersionDto.getEpApplicationVersion().getVersion());
+                appDto.setLatestSemVer(appVersionDto.getEpApplicationVersion().getVersion());
                 break;
             }
         }
@@ -382,14 +552,16 @@ public class EpImportOperator {
                     appVersionDto.getApplicationId(), 
                     appName, 
                     appVersionDto.getDeclaredProducedEventVersionIds(), 
-                    appVersionDto.isLastestVersionFound() ? appDto.getLastestApplicationSemVer() : null
+                    appVersionDto.getDeclaredConsumedEventVersionIds(),
+                    appVersionDto.isLastestVersionFound() ? appDto.getLatestSemVer() : null
                 );
-                appDto.setLastestApplicationSemVer(epAppVersion.getVersion());
+                appDto.setLatestSemVer(epAppVersion.getVersion());
                 log.info("CREATED New Application Version: [{}] v{} in Event Portal", appName, epAppVersion.getVersion());
             } else {
                 epAppVersion = epClient.updateApplicationVersion(
                     appVersionDto.getEpApplicationVersion().getId(),
-                    appVersionDto.getDeclaredProducedEventVersionIds()
+                    appVersionDto.getDeclaredProducedEventVersionIds(),
+                    appVersionDto.getDeclaredConsumedEventVersionIds()
                 );
                 log.info("UPDATED Draft Application Version: [{}] v{} in Event Portal", appName, epAppVersion.getVersion());
             }
@@ -401,10 +573,89 @@ public class EpImportOperator {
         appVersionDto.setDescription(epAppVersion.getDescription());
     }
 
+    public void importEventApis() throws Exception
+    {
+        for (Map.Entry<String, EventApiDto> apiEntry : dtoResultSet.getMapEventApis().entrySet()) {
+            importEventApiObject(apiEntry.getKey(), apiEntry.getValue());
+        }
+    }
+    
+    private void importEventApiObject(
+        final String eventApiName,
+        final EventApiDto eventApiDto
+    ) throws Exception
+    {
+        if (!eventApiDto.isMatchFound()) {
+            EventApi epEventApi = epClient.createEventApiObject(eventApiName);
+            log.info("CREATED Event API [{}] in Event Portal", eventApiName);
+            eventApiDto.setId(epEventApi.getId());
+            eventApiDto.setMatchFound(true);
+            // eventApiDto.setApplicationType(epEventApi.getApplicationType());
+            eventApiDto.setBrokerType(epEventApi.getBrokerType().getValue());
+        }
+        for (EventApiVersionDto eventApiVersionDto : eventApiDto.getEventApiVersions()) {
+            if (eventApiVersionDto.isLastestVersionFound()) {
+                eventApiDto.setLatestSemVer(eventApiVersionDto.getEpEventApiVersion().getVersion());
+                break;
+            }
+        }
+        for (EventApiVersionDto eventApiVersionDto : eventApiDto.getEventApiVersions()) {
+            eventApiVersionDto.setEventApiId(eventApiDto.getId());
+            importEventApiVersion(eventApiVersionDto, eventApiName, eventApiDto);
+        }
+    }
+
+    private void importEventApiVersion(
+        final EventApiVersionDto eventApiVersionDto,
+        final String eventApiName,
+        final EventApiDto eventApiDto
+    ) throws Exception
+    {
+        EventApiVersion epEventApiVersion;
+        if (eventApiVersionDto.isMatchFound()) {
+            epEventApiVersion = eventApiVersionDto.getEpEventApiVersion();
+        } else {
+            if (!eventApiVersionDto.isLastestVersionFound() || (eventApiVersionDto.isLastestVersionFound() && !eventApiVersionDto.isLatestVersionFoundInDraftState())) {
+                epEventApiVersion = epClient.createEventApiVersion(
+                    eventApiVersionDto.getEventApiId(), 
+                    eventApiName, 
+                    eventApiVersionDto.getProducedEventVersionIds(), 
+                    eventApiVersionDto.getConsumedEventVersionIds(),
+                    eventApiVersionDto.isLastestVersionFound() ? eventApiDto.getLatestSemVer() : null
+                );
+                eventApiDto.setLatestSemVer(epEventApiVersion.getVersion());
+                log.info("CREATED New Event API Version: [{}] v{} in Event Portal", eventApiName, epEventApiVersion.getVersion());
+            } else {
+                epEventApiVersion = epClient.updateEventApiVersion(
+                    eventApiVersionDto.getEpEventApiVersion().getId(),
+                    eventApiVersionDto.getProducedEventVersionIds(),
+                    eventApiVersionDto.getConsumedEventVersionIds()
+                );
+                log.info("UPDATED Draft Event API Version: [{}] v{} in Event Portal", eventApiName, epEventApiVersion.getVersion());
+            }
+            eventApiVersionDto.setMatchFound(true);
+        }
+        eventApiVersionDto.setId(epEventApiVersion.getId());
+        eventApiVersionDto.setStateId(epEventApiVersion.getStateId());
+        eventApiVersionDto.setVersion(epEventApiVersion.getVersion());
+        eventApiVersionDto.setDescription(epEventApiVersion.getDescription());
+    }
+
     public void importSchemas() throws Exception
     {
+        List<Future<?>> futures = new ArrayList<>();
         for (Map.Entry<String, SchemaDto> schemaEntry : dtoResultSet.getMapSchemas().entrySet()) {
-            importSchemaObject(schemaEntry.getKey(), schemaEntry.getValue());
+            futures.add(executor.submit(() -> {
+                try {
+                    importSchemaObject(schemaEntry.getKey(), schemaEntry.getValue());
+                } catch (Exception e) {
+                    log.error("Failed to import schema {}", schemaEntry.getKey(), e);
+                }
+            }));
+        }
+
+        for (Future<?> future : futures) {
+            future.get(); // wait for each task to complete
         }
     }
 
@@ -423,7 +674,7 @@ public class EpImportOperator {
         }
         for (SchemaVersionDto svDto : schemaDto.getSchemaVersions()) {
             if (svDto.isLastestVersionFound()) {
-                schemaDto.setLastestSchemaSemVer(svDto.getEpSchemaVersion().getVersion());
+                schemaDto.setLatestSemVer(svDto.getEpSchemaVersion().getVersion());
                 break;
             }
         }
@@ -448,9 +699,9 @@ public class EpImportOperator {
                     svDto.getSchemaId(), 
                     svDto.getContent(), 
                     schemaName, 
-                    svDto.isLastestVersionFound() ? schemaDto.getLastestSchemaSemVer() : null
+                    svDto.isLastestVersionFound() ? schemaDto.getLatestSemVer() : null
                 );
-                schemaDto.setLastestSchemaSemVer(sv.getVersion());
+                schemaDto.setLatestSemVer(sv.getVersion());
                 // For cascade object creation
                 // If creating new schemaVersion to update an existing version, then
                 // store the old and new version for retrieval
@@ -475,8 +726,19 @@ public class EpImportOperator {
 
     public void importEnums() throws Exception
     {
+        List<Future<?>> futures = new ArrayList<>();
         for (Map.Entry<String, EnumDto> enumEntry : dtoResultSet.getMapEnums().entrySet()) {
-            importEnumObject(enumEntry.getKey(), enumEntry.getValue());
+            futures.add(executor.submit(() -> {
+                try {
+                    importEnumObject(enumEntry.getKey(), enumEntry.getValue());
+                } catch (Exception e) {
+                    log.error("Failed to import enum {}", enumEntry.getKey(), e);
+                }
+            }));
+        }
+
+        for (Future<?> future : futures) {
+            future.get(); // wait for each task to complete
         }
     }
 
@@ -495,7 +757,7 @@ public class EpImportOperator {
 
         for (EnumVersionDto evDto : enumDto.getEnumVersions()) {
             if (evDto.isLastestVersionFound()) {
-                enumDto.setLastestEnumSemVer(evDto.getEpEnumVersion().getVersion());
+                enumDto.setLatestSemVer(evDto.getEpEnumVersion().getVersion());
                 break;
             }
         }
@@ -522,9 +784,9 @@ public class EpImportOperator {
                     evDto.getEnumId(), 
                     evDto.getValuesAsStringList(), 
                     enumName, 
-                    evDto.isLastestVersionFound() ? enumDto.getLastestEnumSemVer() : null
+                    evDto.isLastestVersionFound() ? enumDto.getLatestSemVer() : null
                 );
-                enumDto.setLastestEnumSemVer(ev.getVersion());
+                enumDto.setLatestSemVer(ev.getVersion());
 
                 // For cascade object creation
                 // If creating new enumVersion to update an existing version, then
@@ -551,8 +813,19 @@ public class EpImportOperator {
 
     public void importEvents() throws Exception
     {
+        List<Future<?>> futures = new ArrayList<>();
         for (Map.Entry<String, EventDto> eventEntry : dtoResultSet.getMapEvents().entrySet()) {
-            importEventObject(eventEntry.getKey(), eventEntry.getValue());
+            futures.add(executor.submit(() -> {
+                try {
+                    importEventObject(eventEntry.getKey(), eventEntry.getValue());
+                } catch (Exception e) {
+                    log.error("Failed to import event {}", eventEntry.getKey(), e);
+                }
+            }));
+        }
+
+        for (Future<?> future : futures) {
+            future.get(); // wait for each task to complete
         }
     }
 
@@ -570,7 +843,8 @@ public class EpImportOperator {
         }
         for (EventVersionDto eventVersionDto : eventDto.getEventVersions()) {
             if (eventVersionDto.isLastestVersionFound()) {
-                eventDto.setLatestEventSemVer(eventVersionDto.getEpEventVersion().getVersion());
+                // eventDto.setLatestSemVer(eventVersionDto.getEpEventVersion().getVersion());
+                eventDto.setLatestSemVer(eventVersionDto.getEpEventVersion().getVersion());
                 break;
             }
         }
@@ -596,9 +870,9 @@ public class EpImportOperator {
                     eventName,
                     eventVersionDto.getSchemaVersionId(),
                     eventVersionDto.getDeliveryDescriptor(),
-                    eventVersionDto.isLastestVersionFound() ? eventDto.getLatestEventSemVer() : null
+                    eventVersionDto.isLastestVersionFound() ? eventDto.getLatestSemVer() : null
                 );
-                eventDto.setLatestEventSemVer(epEventVersion.getVersion());
+                eventDto.setLatestSemVer(epEventVersion.getVersion());
                 // For cascade object creation
                 // If creating new event version to update an existing version, then
                 // store the old and new version for retrieval
@@ -625,51 +899,146 @@ public class EpImportOperator {
     public void cascadeUpdateEvents() throws Exception
     {
         final Map<String, String> eventIds = epClient.getAllEventIds();
-        final List<EventVersion> latestEventVersions = new ArrayList<>();
+        final List<EventVersion> latestEventVersions = Collections.synchronizedList(new ArrayList<>());
+
+        List<Future<?>> lookupVersionFutures = new ArrayList<>();
         for (Map.Entry<String, String> entry : eventIds.entrySet()) {
-            final EventVersion eventVersion = epClient.getLastEventVersion(entry.getKey());
-            if (eventVersion != null && ! incrementedEventVersions.containsKey(eventVersion.getId())) {
-                latestEventVersions.add(eventVersion);
+            lookupVersionFutures.add(executor.submit(() -> {
+                try {
+                    final EventVersion eventVersion = epClient.getLastEventVersion(entry.getKey());
+                    if (eventVersion != null && ! incrementedEventVersions.containsKey(eventVersion.getId())) {
+                        latestEventVersions.add(eventVersion);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to get last event version for event {}", entry.getValue(), e);
+                }
+            }));
+        }
+
+        for (Future<?> future : lookupVersionFutures) {
+            future.get(); // wait for each task to complete
+        }
+
+        List<Future<?>> updateVersionFutures = new ArrayList<>();
+        for (EventVersion ev : latestEventVersions) {
+            updateVersionFutures.add(executor.submit(() -> {
+                try {
+                    boolean changeFound = false;
+                    EventVersionDto.DeliveryDescriptor ddDto = EventPortalModelUtils.mapEpEventVersionToDtoDeliveryDescriptor(ev.getDeliveryDescriptor());
+                    String schemaVersionId = ev.getSchemaVersionId();
+                    final String semVer = ev.getVersion();
+                    if ( incrementedSchemaVersions.containsKey(schemaVersionId) ) {
+                        changeFound = true;
+                        schemaVersionId = incrementedSchemaVersions.get(schemaVersionId);
+                    }
+                    for ( EventVersionDto.TopicAddressLevel level : ddDto.getAddress().getAddressLevels() ) {
+                        if (level.getHasEnum() && incrementedEnumVersions.containsKey(level.getEnumVersionId())) {
+                            changeFound = true;
+                            level.setEnumVersionId(incrementedEnumVersions.get(level.getEnumVersionId()));
+                        }
+                    }
+                    if (changeFound) {
+                        EventVersion updatedEventVersion;
+                        String op = "";
+                        if (ev.getStateId().contentEquals("1")) {
+                            updatedEventVersion = epClient.updateEventVersion(
+                                ev.getId(), 
+                                schemaVersionId, 
+                                ddDto
+                            );
+                            op = "UPDATED existing";
+                        } else {
+                            updatedEventVersion = epClient.createEventVersion(
+                                ev.getEventId(), eventIds.get(ev.getEventId()), schemaVersionId, ddDto, semVer);
+                            if (updatedEventVersion != null) {
+                                incrementedEventVersions.put( ev.getId(), updatedEventVersion.getId() );
+                            }
+                            op = "CREATED new";
+                        }
+                        log.info(
+                            "CASCADE UPDATE -- {} event version [{}] for Event: [{}]",
+                            op,
+                            updatedEventVersion.getVersion(),
+                            eventIds.get(ev.getEventId())
+                        );
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to cascade update event {}", ev.getId(), e);
+                }
+            }));
+        }
+
+        for (Future<?> future : updateVersionFutures) {
+            future.get(); // wait for each task to complete
+        }
+    }
+
+    public void cascadeUpdateEventApis() throws Exception
+    {
+        final Map<String, String> eventApiIds = epClient.getAllEventApiIds();
+        final List<EventApiVersion> latestEventApiVersions = new ArrayList<>();
+        String thisEventApiVersionId = "";
+
+        for (Map.Entry<String, EventApiDto> entry : dtoResultSet.getMapEventApis().entrySet()) {
+            EventApiVersionDto eventApiVersionDto = entry.getValue().getEventApiVersions().get(0);
+            if (eventApiVersionDto != null) {
+                thisEventApiVersionId = eventApiVersionDto.getId();
+            }
+            break;
+        }
+
+        for (Map.Entry<String, String> entry : eventApiIds.entrySet()) {
+            final EventApiVersion eventApiVersion = epClient.getLastEventApiVersion(entry.getKey());
+            if (eventApiVersion != null && ! thisEventApiVersionId.contentEquals(eventApiVersion.getId())) {
+                latestEventApiVersions.add(eventApiVersion);
             }
         }
-        for (EventVersion ev : latestEventVersions) {
+
+        for (EventApiVersion eav : latestEventApiVersions) {
             boolean changeFound = false;
-            EventVersionDto.DeliveryDescriptor ddDto = EventPortalModelUtils.mapEpEventVersionToDtoDeliveryDescriptor(ev.getDeliveryDescriptor());
-            String schemaVersionId = ev.getSchemaVersionId();
-            final String semVer = ev.getVersion();
-            if ( incrementedSchemaVersions.containsKey(schemaVersionId) ) {
-                changeFound = true;
-                schemaVersionId = incrementedSchemaVersions.get(schemaVersionId);
-            }
-            for ( EventVersionDto.TopicAddressLevel level : ddDto.getAddress().getAddressLevels() ) {
-                if (level.getHasEnum() && incrementedEnumVersions.containsKey(level.getEnumVersionId())) {
+            final List<String> eavProducedEventVersions = eav.getProducedEventVersionIds();
+            final List<String> eavConsumedEventVersions = eav.getConsumedEventVersionIds();
+            final String semVer = eav.getVersion();
+            final List<String> updatedEavProducedEventVersions = new ArrayList<>();
+            final List<String> updatedEavConsumedEventVersions = new ArrayList<>();
+            for (String eavEventVersion : eavProducedEventVersions) {
+                if (incrementedEventVersions.containsKey(eavEventVersion)) {
                     changeFound = true;
-                    level.setEnumVersionId(incrementedEnumVersions.get(level.getEnumVersionId()));
+                    updatedEavProducedEventVersions.add(incrementedEventVersions.get(eavEventVersion));
+                } else {
+                    updatedEavProducedEventVersions.add(eavEventVersion);
+                }
+            }
+            for (String eavEventVersion : eavConsumedEventVersions) {
+                if (incrementedEventVersions.containsKey(eavEventVersion)) {
+                    changeFound = true;
+                    updatedEavConsumedEventVersions.add(incrementedEventVersions.get(eavEventVersion));
+                } else {
+                    updatedEavConsumedEventVersions.add(eavEventVersion);
                 }
             }
             if (changeFound) {
-                EventVersion updatedEventVersion;
+                EventApiVersion updatedEventApiVersion;
                 String op = "";
-                if (ev.getStateId().contentEquals("1")) {
-                    updatedEventVersion = epClient.updateEventVersion(
-                        ev.getId(), 
-                        schemaVersionId, 
-                        ddDto
+                if (eav.getStateId().contentEquals("1")) {
+                    updatedEventApiVersion = epClient.updateEventApiVersion(
+                        eav.getId(), updatedEavProducedEventVersions, updatedEavConsumedEventVersions
                     );
                     op = "UPDATED existing";
                 } else {
-                    updatedEventVersion = epClient.createEventVersion(
-                        ev.getEventId(), eventIds.get(ev.getEventId()), schemaVersionId, ddDto, semVer);
-                    if (updatedEventVersion != null) {
-                        incrementedEventVersions.put( ev.getId(), updatedEventVersion.getId() );
-                    }
+                    updatedEventApiVersion = epClient.createEventApiVersion(
+                        eav.getEventApiId(),
+                        eventApiIds.get(eav.getEventApiId()),
+                        updatedEavProducedEventVersions, updatedEavConsumedEventVersions,
+                        semVer
+                    );
                     op = "CREATED new";
                 }
                 log.info(
-                    "CASCADE UPDATE -- {} event version [{}] for Event: [{}]",
-                    op,
-                    updatedEventVersion.getVersion(),
-                    eventIds.get(ev.getEventId())
+                    "CASCADE UPDATE -- {} event api version [{}] for Event API: [{}]", 
+                    op, 
+                    updatedEventApiVersion.getVersion(), 
+                    eventApiIds.get(eav.getEventApiId())
                 );
             }
         }
@@ -707,15 +1076,25 @@ public class EpImportOperator {
 
         for (ApplicationVersion av : latestApplicationVersions) {
             boolean changeFound = false;
-            final List<String> avEventVersions = av.getDeclaredProducedEventVersionIds();
+            final List<String> avProducedEventVersions = av.getDeclaredProducedEventVersionIds();
+            final List<String> avConsumedEventVersions = av.getDeclaredConsumedEventVersionIds();
             final String semVer = av.getVersion();
-            final List<String> updatedAvEventVersions = new ArrayList<>();
-            for (String avEventVersion : avEventVersions) {
+            final List<String> updatedAvProducedEventVersions = new ArrayList<>();
+            final List<String> updatedAvConsumedEventVersions = new ArrayList<>();
+            for (String avEventVersion : avProducedEventVersions) {
                 if (incrementedEventVersions.containsKey(avEventVersion)) {
                     changeFound = true;
-                    updatedAvEventVersions.add(incrementedEventVersions.get(avEventVersion));
+                    updatedAvProducedEventVersions.add(incrementedEventVersions.get(avEventVersion));
                 } else {
-                    updatedAvEventVersions.add(avEventVersion);
+                    updatedAvProducedEventVersions.add(avEventVersion);
+                }
+            }
+            for (String avEventVersion : avConsumedEventVersions) {
+                if (incrementedEventVersions.containsKey(avEventVersion)) {
+                    changeFound = true;
+                    updatedAvConsumedEventVersions.add(incrementedEventVersions.get(avEventVersion));
+                } else {
+                    updatedAvConsumedEventVersions.add(avEventVersion);
                 }
             }
             if (changeFound) {
@@ -723,14 +1102,14 @@ public class EpImportOperator {
                 String op = "";
                 if (av.getStateId().contentEquals("1")) {
                     updatedApplicationVersion = epClient.updateApplicationVersion(
-                        av.getId(), updatedAvEventVersions
+                        av.getId(), updatedAvProducedEventVersions, updatedAvConsumedEventVersions
                     );
                     op = "UPDATED existing";
                 } else {
                     updatedApplicationVersion = epClient.createApplicationVersion(
                         av.getApplicationId(),
                         applicationIds.get(av.getApplicationId()),
-                        updatedAvEventVersions,
+                        updatedAvProducedEventVersions, updatedAvConsumedEventVersions,
                         semVer
                     );
                     op = "CREATED new";

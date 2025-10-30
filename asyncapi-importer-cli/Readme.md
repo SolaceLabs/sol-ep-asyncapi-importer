@@ -1,61 +1,235 @@
-# AsyncApi Importer CLI Tool
-This project provides a Command Line Interface wrapper around the **asyncapi-importer-core** project. This tool can be used to import AsyncApi specifications into Event Portal from a command line.
+# AsyncAPI Importer CLI
+
+A command-line interface (CLI) tool for importing AsyncAPI specifications into Solace Event Portal. This module provides a wrapper around the [asyncapi-importer-core](../asyncapi-importer-core/Readme.md) functionality for easy command-line usage.
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Basic Usage](#basic-usage)
+  - [Command-Line Options](#command-line-options)
+  - [Examples](#examples)
+- [Regional Endpoints](#regional-endpoints)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+- **AsyncAPI v2.x Support**: Import AsyncAPI v2.x specification files
+- **Flexible Import Options**: 
+  - Import Applications and their versions
+  - Import Event APIs and their versions
+  - Import Events, Schemas, and Enums
+- **Versioning Control**: Choose between MAJOR, MINOR, or PATCH version increments
+- **Cascade Updates**: Automatically update dependent objects
+- **Multi-threaded Processing**: Optimized performance with parallel operations
+- **Regional Support**: Works with all Solace Cloud regions
+- **Cross-platform**: Runs on any system with Java 17+
 
 ## Requirements
 
-### Access to Event Portal
-- Event Portal token with full read and write access
-- Event Portal access - Access to the UI is desirable but not required to run the import
-- Application Domain to use as a target. The application domain must exist before attempting to import.
+### Event Portal Access
+- **Event Portal Bearer Token**: Full read and write access required
+- **Application Domain**: Target application domain must exist before import
+- **Network Access**: HTTPS access to Solace Cloud API (port 443)
 
 ### System Requirements
-- Java 11 Runtime
-- HTTP/S access to Solace Cloud API on Port 443
-    - https://api.solace.cloud - Solace PubSub+ Cloud US East Region - **DEFAULT**
-    - https://api.solacecloud.com.au - Solace PubSub+ Cloud AU Region
-    - https://api.solacecloud.eu - Solace PubSub+ Cloud EU Region
-    - https://api.solacecloud.sg - Solace PubSub+ Cloud SG Region
+- **Java**: 17 or higher
+- **Memory**: Minimum 512MB RAM recommended
+- **Disk Space**: ~50MB for the JAR file
 
-### Limitations
-- The tool will import published events only (those channels with **subscribe** operations).
+## Installation
 
-## Obtaining Executable
-You can download a releaseed version of the JAR file from the GitHub project.
+### Download Pre-built Release
+
+Download the latest `asyncapi-import.jar` from the [GitHub Releases](https://github.com/SolaceLabs/sol-ep-asyncapi-importer/releases) page.
 
 ### Build from Source
-1. From project root, build using Maven. Recommend skipping unit tests. These require setup and access to an Event Portal account.<br>`mvn clean install -DskipTests=true`
-2. Locate executable jar file in `asyncapi-importer-cli/target/`. Compiled jar: `asyncapi-import.jar`
 
-## Running as a JAR from the command line
+Requires Maven 3.6+:
 
-Command will have the form:
+```bash
+# Clone the repository
+git clone <repository-url>
+cd sol-ep-asyncapi-importer
 
-java -jar asyncapi-import.jar -a **ASYNCAPI_TO_IMPORT** -d **APP_DOMAIN** -t **EP_TOKEN** [-u BASE_URL] [-m | -i | -p] [-e] [-z]
+# Build the project (skip tests for faster build)
+mvn clean install -DskipTests=true
 
-**You will need a minimum of three things to execute the importer:**
-1. AsyncApi spec file to import
-2. An existing Event Portal Application Domain
-3. An Event Portal Bearer token for An/Az
+# Locate the executable JAR
+ls asyncapi-importer-cli/target/asyncapi-import.jar
+```
 
-**-m, -i, -p** options define which SemVer element to increment when creating new objects: Major, Minor, or Patch respectively.
+## Usage
 
-### Options
-|Short<br>Form|Long Form|Description|Required|Default|
-|---|---|---|:---:|:---:|
-|`-a`|`--asyncapi`|AsyncApi Spec File to import|**Yes**|N/A|
-|`-d`|`--app-domain`|Target Application Domain|**Yes**|N/A|
-|`-t`|`--ep-token`|Event Portal Access Token|**Yes**|N/A|
-|`-u`|`--ep-base-url`|Cloud API URL<br>(varies by region)|No|https://api.solace.cloud|
-|`-m`|`--version-major`|Increment Major Version|No|`-m` / `--version-major`|
-|`-i`|`--version-minor`|Increment Minor Version|No|`-m` / `--version-major`|
-|`-p`|`--version-patch`|Increment Patch Version|No|`-m` / `--version-major`|
-|`-e`|`--events-only`|Import Events, Enums, and<br>Schemas. Skip Applications|No|N/A|
-|`-z`|`--no-cascade`|Disable cascade update of objects<br>Schemas|No|N/A|
-|`-h`|`--help`|Display Help|No|N/A|
+### Basic Usage
 
-> **Note:** Version options are mutually exclusive. Incremented versions are new SemVer versions when new object versions are created as a result of importing.
+```bash
+java -jar asyncapi-import.jar \
+  -a <asyncapi-file> \
+  -d <app-domain-name> \
+  -t <ep-bearer-token>
+```
 
-> **Note:** If **--events-only** option is specified, applications may still be cascade updated if an associated event has a new version created.
+**Minimum Requirements:**
+1. AsyncAPI specification file path
+2. Existing Event Portal Application Domain name
+3. Event Portal Bearer token with read/write permissions
 
-## Outstanding
-- Check the EP token access before being import operation
+### Command-Line Options
+
+| Short | Long Form | Description | Required | Default |
+|-------|-----------|-------------|:--------:|:-------:|
+| `-a` | `--asyncapi` | Path to AsyncAPI spec file to import | **Yes** | N/A |
+| `-d` | `--app-domain` | Target Application Domain name | **Yes** | N/A |
+| `-t` | `--ep-token` | Event Portal Bearer token | **Yes** | N/A |
+| `-u` | `--ep-base-url` | Event Portal API base URL | No | `https://api.solace.cloud` |
+| `-m` | `--version-major` | Increment MAJOR version (default) | No | Selected |
+| `-i` | `--version-minor` | Increment MINOR version | No | N/A |
+| `-p` | `--version-patch` | Increment PATCH version | No | N/A |
+| `-n` | `--import-application` | Create Application objects | No | Enabled by default |
+| `-e` | `--import-eventapi` | Create Event API objects | No | Disabled by default |
+| `-z` | `--cascade-update` | Enable cascade updates | No | Enabled by default |
+| `-h` | `--help` | Display help message | No | N/A |
+
+**Important Notes:**
+- Version options (`-m`, `-i`, `-p`) are mutually exclusive
+- If no version option is specified, MAJOR increment is used by default
+- Applications are imported by default; use appropriate flags to control import behavior
+
+### Examples
+
+#### Basic Import with Applications
+```bash
+java -jar asyncapi-import.jar \
+  -a my-asyncapi-spec.yaml \
+  -d "Production Domain" \
+  -t "your-ep-bearer-token"
+```
+
+#### Import Event APIs Only
+```bash
+java -jar asyncapi-import.jar \
+  -a my-asyncapi-spec.yaml \
+  -d "Production Domain" \
+  -t "your-ep-bearer-token" \
+  -e
+```
+
+#### Import with MINOR Version Increment
+```bash
+java -jar asyncapi-import.jar \
+  -a my-asyncapi-spec.yaml \
+  -d "Production Domain" \
+  -t "your-ep-bearer-token" \
+  -i
+```
+
+#### Import for EU Region
+```bash
+java -jar asyncapi-import.jar \
+  -a my-asyncapi-spec.yaml \
+  -d "Production Domain" \
+  -t "your-ep-bearer-token" \
+  -u "https://api.solacecloud.eu"
+```
+
+#### Import Both Applications and Event APIs
+```bash
+java -jar asyncapi-import.jar \
+  -a my-asyncapi-spec.yaml \
+  -d "Production Domain" \
+  -t "your-ep-bearer-token" \
+  -n \
+  -e
+```
+
+#### Disable Cascade Updates
+```bash
+java -jar asyncapi-import.jar \
+  -a my-asyncapi-spec.yaml \
+  -d "Production Domain" \
+  -t "your-ep-bearer-token" \
+  --no-cascade-update
+```
+
+## Regional Endpoints
+
+Solace Cloud operates in multiple regions. Use the `-u` option to specify the appropriate endpoint:
+
+| Region | Endpoint | Usage |
+|--------|----------|-------|
+| **US East** (Default) | `https://api.solace.cloud` | `-u https://api.solace.cloud` |
+| **EU** | `https://api.solacecloud.eu` | `-u https://api.solacecloud.eu` |
+| **Australia** | `https://api.solacecloud.com.au` | `-u https://api.solacecloud.com.au` |
+| **Singapore** | `https://api.solacecloud.sg` | `-u https://api.solacecloud.sg` |
+
+## Troubleshooting
+
+### Common Issues
+
+**"Application domain not found"**
+- Verify the application domain exists in Event Portal
+- Check spelling and case sensitivity
+- Ensure your token has access to the domain
+
+**"Authentication failed"**
+- Verify your bearer token is valid and not expired
+- Ensure the token has read and write permissions
+- Check that you're using the correct regional endpoint
+
+**"Connection timeout"**
+- Verify network connectivity to Solace Cloud
+- Check firewall settings for HTTPS (port 443)
+- Try using a different regional endpoint if applicable
+
+**"Out of memory errors"**
+- Increase JVM memory: `java -Xmx1g -jar asyncapi-import.jar ...`
+- For very large AsyncAPI files, consider splitting them
+
+### Verbose Logging
+
+For debugging, you can enable verbose logging using Log4j2 system properties:
+
+```bash
+# Override the entire Log4j2 configuration
+java -Dlog4j.configurationFile=log4j2-debug.properties \
+     -jar asyncapi-import.jar \
+     -a my-spec.yaml -d "Domain" -t "token"
+```
+
+### Exit Codes
+
+- `0`: Success
+- `1`: General error (check error message)
+- `2`: Invalid command-line arguments
+
+## Performance Considerations
+
+The CLI tool uses multi-threaded processing for optimal performance:
+
+- **Parallel Processing**: Up to 8 concurrent threads for API operations
+- **Memory Usage**: Typically 256-512MB depending on AsyncAPI size
+- **Processing Time**: Varies based on:
+  - AsyncAPI complexity
+  - Number of existing objects in Event Portal
+  - Network latency to Solace Cloud
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development
+
+For programmatic usage and advanced features, see the [AsyncAPI Importer Core](../asyncapi-importer-core/Readme.md) module documentation.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](../LICENSE) file for details.
