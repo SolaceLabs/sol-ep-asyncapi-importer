@@ -2,7 +2,7 @@
 This project provides tooling to import AsyncAPI specs into Event Portal. 
 
 # Prerequisites
-- Java 11+
+- Java 17+
 - Maven 3.6+
 
 # Steps to build the project
@@ -35,13 +35,13 @@ applications where needed. Convenience methods are provided to obtain objects an
 
 ## AsyncApi Importer Core
 This module provides the core functionality of the importer.
-- References the AsyncApi Accessor v2 module.
+- Details for function, requirements, and how to build the **AsyncApi Importer Core** project can be found in the module's [Readme.md](asyncapi-importer-core/Readme.md) file.
+- References the **AsyncApi Accessor v2** module.
 
 ## AsyncApi Importer CLI
 This module provides a wrapper to call the AsyncApi Importer Core module from a command line. Building the project successfully will produce an executable jar in the module target/ directory.
-Details for how to invoke the CLI can be found in the module's
-[Readme.md](https://github.com/dennis-brinley/sol-ep-asyncapi-importer/blob/main/asyncapi-importer-cli/Readme.md) file.
-- References the AsyncApi Importer Core module
+- Details for how to invoke the CLI can be found in the module's [Readme.md](asyncapi-importer-cli/Readme.md) file.
+- References the **AsyncApi Importer Core** module
 
 # Issues and Enhancements
 1. Add ability to specify new objects as Shared upon creation

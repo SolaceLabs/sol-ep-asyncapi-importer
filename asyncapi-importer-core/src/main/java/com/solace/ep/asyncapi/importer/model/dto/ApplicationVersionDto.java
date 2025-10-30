@@ -40,6 +40,8 @@ public class ApplicationVersionDto extends AbstractVersionDto {
 
     private List<String> declaredProducedEventVersionIds;
 
+    private List<String> declaredConsumedEventVersionIds;
+
     // Matched EP ApplicationVersion or latest EP ApplicationVersion
     private ApplicationVersion epApplicationVersion;
     
@@ -49,4 +51,12 @@ public class ApplicationVersionDto extends AbstractVersionDto {
         }
         return declaredProducedEventVersionIds;
     }
+
+    public List<String> getDeclaredConsumedEventVersionIds() {
+        if ( declaredConsumedEventVersionIds == null ) {
+            declaredConsumedEventVersionIds = new ArrayList<>();
+        }
+        return declaredConsumedEventVersionIds;
+    }
+    
 }

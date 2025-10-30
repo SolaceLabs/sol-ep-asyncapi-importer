@@ -32,6 +32,8 @@ import com.solace.ep.asyncapi.importer.model.dto.ApplicationVersionDto;
 import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
 import com.solace.ep.asyncapi.importer.model.dto.EnumDto;
 import com.solace.ep.asyncapi.importer.model.dto.EnumVersionDto;
+import com.solace.ep.asyncapi.importer.model.dto.EventApiDto;
+import com.solace.ep.asyncapi.importer.model.dto.EventApiVersionDto;
 import com.solace.ep.asyncapi.importer.model.dto.EventDto;
 import com.solace.ep.asyncapi.importer.model.dto.EventVersionDto;
 import com.solace.ep.asyncapi.importer.model.dto.SchemaDto;
@@ -65,6 +67,8 @@ public class AsyncApiV2ToDto {
 
     private Map<String, ApplicationDto> mapApplications = new HashMap<>();
 
+    private Map<String, EventApiDto> mapEventApis = new HashMap<>();
+
     public AsyncApiV2ToDto( 
         final AsyncApiAccessor asyncApiAccessor, 
         final String applicationDomainId,
@@ -75,6 +79,16 @@ public class AsyncApiV2ToDto {
         this.applicationDomainName = applicationDomainName;
     }
 
+    public static DtoResultSet mapAsyncApiToDto(
+        final String asyncApiString,
+        final String applicationDomainId,
+        final String applicationDomainName
+    ) throws Exception {
+        AsyncApiAccessor asyncApiAccessor = new AsyncApiAccessor(asyncApiString);
+        AsyncApiV2ToDto mapper = new AsyncApiV2ToDto(asyncApiAccessor, applicationDomainId, applicationDomainName);
+        return mapper.mapAsyncApiToDto();
+    }
+
     public DtoResultSet mapAsyncApiToDto() throws Exception {
 
         final Map<String, AsyncApiChannel> importChannels = new HashMap<>();
@@ -83,9 +97,10 @@ public class AsyncApiV2ToDto {
         for ( Map.Entry<String, JsonElement> channelEntry : asyncApiAccessor.getChannels().entrySet() ) {
             if ( channelEntry.getValue().isJsonObject() ) {
                 AsyncApiChannel channel = new AsyncApiChannel(channelEntry.getValue().getAsJsonObject(), asyncApiAccessor);
-                if (channel.hasSubscribeOperation()) {
-                    importChannels.put(channelEntry.getKey(), channel);
-                }
+                // if (channel.hasSubscribeOperation()) {
+                //     importChannels.put(channelEntry.getKey(), channel);
+                // }
+                importChannels.put(channelEntry.getKey(), channel);
             } else {
                 throw new Exception("Error parsing AsyncApi input file; channel content invalid");
             }
@@ -110,13 +125,22 @@ public class AsyncApiV2ToDto {
 
         ApplicationVersionDto appVersionDto = new ApplicationVersionDto();
         appDto.getApplicationVersions().add(appVersionDto);     // Add empty application version
-        
+
+        EventApiDto eventApiDto = new EventApiDto();
+        eventApiDto.setApplicationDomainId(applicationDomainId);
+        eventApiDto.setName(appDto.getName());
+        mapEventApis.put(appDto.getName(), eventApiDto);
+
+        EventApiVersionDto eventApiVersionDto = new EventApiVersionDto();
+        eventApiDto.getEventApiVersions().add(eventApiVersionDto);   // Add empty event version
+
         DtoResultSet resultSet = new DtoResultSet();
         resultSet.setApplicationDomainDto(mapApplicationDomain);
         resultSet.setMapApplications(mapApplications);
         resultSet.setMapEnums(mapEnums);
         resultSet.setMapSchemas(mapSchemas);
         resultSet.setMapEvents(mapEvents);
+        resultSet.setMapEventApis(mapEventApis);
 
         log.info("Discovered objects in AsyncApi for import to EP App Domain: {}", applicationDomainName);
         log.info(
@@ -137,7 +161,7 @@ public class AsyncApiV2ToDto {
     {
         final Map<String, EnumVersionDto> enumVersionsInThisChannel = new HashMap<>();  // indexed by param/enum name - this works because only one version can be present per channel
 
-        SchemaVersionDto schemaVersionInThisChannel = null;   // TODO - null or empty string?
+        // SchemaVersionDto schemaVersionInThisChannel = null;   // TODO - null or empty string?
 
         // Map Enums
         for ( Map.Entry<String, AsyncApiChannel.ParameterObject> entry : channel.getParameterObjects().entrySet()) {
@@ -150,36 +174,58 @@ public class AsyncApiV2ToDto {
         // Map Schemas and Events
         // There should only be one message in this list
         for ( AsyncApiMessage msg : channel.getSubscribeOpMessages() ) {
-            // final String schemaFormat = msg.getSchemaFormat();
-            final String contentType = ( msg.getContentType() != null ? msg.getContentType() : asyncApiAccessor.getDefaultContentType() );
-            final String payload = msg.getPayloadAsString();
-            final String schemaName = msg.getSchemaName();
-            final String messageName = msg.getMessageName();
-            // channel.getEventPortalEventNameFromChannel() added for ASAPIO imports
-            final String eventName = channel.getEventPortalEventNameFromChannel() != null ? channel.getEventPortalEventNameFromChannel() : messageName;
-            
-            // Map the schema, return the object representing the schema version
-            schemaVersionInThisChannel = mapSchemaDto(schemaName, contentType, payload);
-
-            mapEventDto(channelName, eventName, schemaVersionInThisChannel, enumVersionsInThisChannel);
+            mapAsyncApiMessageToDto(channelName, channel, msg, enumVersionsInThisChannel, false);
         }
+
+        for ( AsyncApiMessage msg : channel.getPublishOpMessages() ) {
+            mapAsyncApiMessageToDto(channelName, channel, msg, enumVersionsInThisChannel, true);
+        }
+    }
+
+    private void mapAsyncApiMessageToDto(
+        final String channelName, 
+        final AsyncApiChannel channel,
+        final AsyncApiMessage msg,
+        final Map<String, EnumVersionDto> enumVersionsInThisChannel,
+        final boolean publishOp
+    ) throws Exception 
+    {
+        final String contentType = ( msg.getContentType() != null ? msg.getContentType() : asyncApiAccessor.getDefaultContentType() );
+        final String payload = msg.getPayloadAsString();
+        final String schemaName = msg.getSchemaName();
+        final String messageName = msg.getMessageName();
+        // channel.getEventPortalEventNameFromChannel() added for ASAPIO imports
+        final String eventName = channel.getEventPortalEventNameFromChannel() != null ? channel.getEventPortalEventNameFromChannel() : messageName;
+        
+        // Map the schema, return the object representing the schema version
+        SchemaVersionDto schemaVersionInThisChannel = mapSchemaDto(schemaName, contentType, payload);
+
+        mapEventDto(channelName, eventName, schemaVersionInThisChannel, enumVersionsInThisChannel, publishOp);
     }
 
     private void mapEventDto(
         final String channelName,
         final String messageName, 
         final SchemaVersionDto schemaVersion, 
-        final Map<String, EnumVersionDto> enumVersions) 
+        final Map<String, EnumVersionDto> enumVersions,
+        final boolean subscribesToEvent) 
     {
         EventDto eventDto = mapEvents.get(messageName);
         if (eventDto == null) {
             eventDto = new EventDto(messageName, applicationDomainId);
             mapEvents.put(messageName, eventDto);
         }
+        if (subscribesToEvent && ! eventDto.getConsumedEvent()) {
+            eventDto.setConsumedEvent(true);
+        }
+        if (!subscribesToEvent && ! eventDto.getPublishedEvent()) {
+            eventDto.setPublishedEvent(true);
+        }
 
         EventVersionDto eventVersion = new EventVersionDto();
         eventVersion.setSchemaVersionDto(schemaVersion);
         mapDeliveryDescriptor(eventVersion, channelName, enumVersions);
+        
         eventDto.getEventVersions().add(eventVersion);
     }
 

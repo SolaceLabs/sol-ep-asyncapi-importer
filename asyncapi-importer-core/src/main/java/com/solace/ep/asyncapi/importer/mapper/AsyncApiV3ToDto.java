@@ -17,66 +17,65 @@
 
 package com.solace.ep.asyncapi.importer.mapper;
 
-import java.util.HashMap;
-import java.util.Map;
+// import java.util.HashMap;
+// import java.util.Map;
 
-import com.solace.ep.asyncapi.accessor.v3.AsyncApiAccessor;
-import com.solace.ep.asyncapi.accessor.v3.AsyncApiOperation;
-import com.solace.ep.asyncapi.importer.model.dto.ApplicationDomainDto;
-import com.solace.ep.asyncapi.importer.model.dto.ApplicationDto;
-import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
-import com.solace.ep.asyncapi.importer.model.dto.EnumDto;
-import com.solace.ep.asyncapi.importer.model.dto.EventDto;
-import com.solace.ep.asyncapi.importer.model.dto.SchemaDto;
+// import com.solace.ep.asyncapi.accessor.v3.AsyncApiAccessor;
+// import com.solace.ep.asyncapi.accessor.v3.AsyncApiOperation;
+// import com.solace.ep.asyncapi.importer.model.dto.ApplicationDomainDto;
+// import com.solace.ep.asyncapi.importer.model.dto.ApplicationDto;
+// import com.solace.ep.asyncapi.importer.model.dto.DtoResultSet;
+// import com.solace.ep.asyncapi.importer.model.dto.EnumDto;
+// import com.solace.ep.asyncapi.importer.model.dto.EventDto;
+// import com.solace.ep.asyncapi.importer.model.dto.SchemaDto;
 
+// TODO: Complete implementation
 public class AsyncApiV3ToDto {
     
-    private AsyncApiAccessor asyncApiAccessor;
+    // private AsyncApiAccessor asyncApiAccessor;
 
-    private String applicationDomainId;
+    // private String applicationDomainId;
 
-    private String applicationDomainName;
+    // private String applicationDomainName;
 
-    private ApplicationDomainDto mapApplicationDomain;
+    // private ApplicationDomainDto mapApplicationDomain;
 
-    private final Map<String, EnumDto> mapEnums = new HashMap<>();
+    // private final Map<String, EnumDto> mapEnums = new HashMap<>();
 
-    private final Map<String, SchemaDto> mapSchemas = new HashMap<>();
+    // private final Map<String, SchemaDto> mapSchemas = new HashMap<>();
 
-    private final Map<String, EventDto> mapSendEvents = new HashMap<>();
+    // private final Map<String, EventDto> mapSendEvents = new HashMap<>();
 
-    private final Map<String, EventDto> mapReceiveEvents = new HashMap<>();
+    // private final Map<String, EventDto> mapReceiveEvents = new HashMap<>();
 
-    private final Map<String, ApplicationDto> mapApplications = new HashMap<>();
+    // private final Map<String, ApplicationDto> mapApplications = new HashMap<>();
 
-    public AsyncApiV3ToDto( 
-        final AsyncApiAccessor asyncApiAccessor, 
-        final String applicationDomainId,
-        final String applicationDomainName ) 
-    {
-        this.asyncApiAccessor = asyncApiAccessor;
-        this.applicationDomainId = applicationDomainId;
-        this.applicationDomainName = applicationDomainName;
-    }
+    // public AsyncApiV3ToDto( 
+    //     final AsyncApiAccessor asyncApiAccessor, 
+    //     final String applicationDomainId,
+    //     final String applicationDomainName ) 
+    // {
+    //     this.asyncApiAccessor = asyncApiAccessor;
+    //     this.applicationDomainId = applicationDomainId;
+    //     this.applicationDomainName = applicationDomainName;
+    // }
 
-    public DtoResultSet mapAsyncApiToDto() throws Exception
-    {
+    // public DtoResultSet mapAsyncApiToDto() throws Exception
+    // {
 
-        for (Map.Entry<String, AsyncApiOperation> entry : asyncApiAccessor.getOperations().entrySet()) {
-            mapOperation(entry.getKey(), entry.getValue());
-        }
+    //     for (Map.Entry<String, AsyncApiOperation> entry : asyncApiAccessor.getOperations().entrySet()) {
+    //         mapOperation(entry.getKey(), entry.getValue());
+    //     }
 
-        return null;
-    }
+    //     return null;
+    // }
 
-    private void mapOperation(
-        final String opName, 
-        final AsyncApiOperation operation) throws Exception
-    {
-        final String summary = operation.getSummary();
+    // private void mapOperation(
+    //     final String opName, 
+    //     final AsyncApiOperation operation) throws Exception
+    // {
+    //     final String summary = operation.getSummary();
 
-    }
-
-    
+    // }
 
 }

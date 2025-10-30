@@ -1,7 +1,9 @@
-# AsyncApi Accessor V2
-The purpose of this module is to provide the capability to parse and retrieve objects from an AsyncApi spec file 2.X version.
+# AsyncApi Accessor V3
+The purpose of this module is to provide the capability to parse and retrieve objects from an AsyncApi spec file 3.X version.
 The intent is for this module to be used by other applications. There are convenience methods established to allow for
 access to Event Portal Fields.
+
+> &#x26A0; This code is currently unused by the **AsyncApiImporterCore** project and has not been tested thoroughly.
 
 # Prerequisites
 - Java 17+

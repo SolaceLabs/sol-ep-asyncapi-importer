@@ -39,6 +39,10 @@ public class EventDto extends AbstractDtoObject {
 
     private List<EventVersionDto> eventVersions;
 
+    private Boolean consumedEvent = false;
+
+    private Boolean publishedEvent = false;
+
     private boolean matchFound = false;
 
     public EventDto( final String name, final String applicationDomainId ) {

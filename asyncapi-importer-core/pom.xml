@@ -6,12 +6,12 @@
     <parent>
           <groupId>com.solace.ep.asyncapi</groupId>
           <artifactId>sol-ep-asyncapi-importer</artifactId>
-          <version>1.1.0</version>
+          <version>1.1.1</version>
     </parent>
 
     <groupId>com.solace.ep.asyncapi</groupId>
     <artifactId>asyncapi-importer-core</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <name>AsyncApi Importer Core</name>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.solace.ep.asyncapi</groupId>
             <artifactId>asyncapi-accessor-v2</artifactId>
-            <version>1.1.0</version>
+            <version>1.1.1</version>
         </dependency>
 
         <dependency>
