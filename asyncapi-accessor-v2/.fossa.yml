@@ -1,0 +1,21 @@
+version: 3
+project:
+  locator: SolaceLabs_asyncapi-accessor-v2
+  id: SolaceLabs_asyncapi-accessor-v2
+  name: asyncapi-accessor-v2
+  teams: []
+  labels:
+    - java
+vendoredDependencies:
+  forceRescans: false
+  scanMethod: CLILicenseScan
+  licenseScanPathFilters:
+    exclude:
+      - "./.git"
+      - "./.github"
+paths:
+  exclude:
+    - ./.git
+    - ./.github
+telemetry:
+  scope: full

@@ -1,0 +1,21 @@
+version: 3
+project:
+  locator: SolaceLabs_asyncapi-importer-cli
+  id: SolaceLabs_asyncapi-importer-cli
+  name: asyncapi-importer-cli
+  teams: []
+  labels:
+    - java
+vendoredDependencies:
+  forceRescans: false
+  scanMethod: CLILicenseScan
+  licenseScanPathFilters:
+    exclude:
+      - "./.git"
+      - "./.github"
+paths:
+  exclude:
+    - ./.git
+    - ./.github
+telemetry:
+  scope: full
