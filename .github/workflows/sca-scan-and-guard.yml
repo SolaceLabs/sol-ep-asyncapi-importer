@@ -26,6 +26,7 @@ jobs:
     uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@main
     with:
       setup_actions: '["setup-java", "maven-settings"]'
+      java_distribution: temurin
       additional_scan_params: |
         fossa.only_path=${{ matrix.path }}
     secrets:
