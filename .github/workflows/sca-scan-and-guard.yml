@@ -1,4 +1,5 @@
 name: SCA Scan
+
 on:
   pull_request:
     branches: [main]
@@ -16,19 +17,10 @@ permissions:
 
 jobs:
   sca_scan:
-    strategy:
-      matrix:
-        include:
-          - { path: asyncapi-accessor-v2, name: asyncapi-accessor-v2 }
-          - { path: asyncapi-accessor-v3, name: asyncapi-accessor-v3 }
-          - { path: asyncapi-importer-cli, name: asyncapi-importer-cli }
-          - { path: asyncapi-importer-core, name: asyncapi-importer-core }
     uses: SolaceDev/solace-public-workflows/.github/workflows/sca-scan-and-guard.yaml@main
     with:
       setup_actions: '["setup-java", "maven-settings"]'
       java_distribution: temurin
-      additional_scan_params: |
-        fossa.only_path=${{ matrix.path }}
     secrets:
       FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
 
@@ -40,13 +32,6 @@ jobs:
       needs.sca_scan.result == 'success'
       && github.event_name == 'push'
       && github.ref_name == github.event.repository.default_branch
-    strategy:
-      matrix:
-        include:
-          - { path: asyncapi-accessor-v2, name: asyncapi-accessor-v2 }
-          - { path: asyncapi-accessor-v3, name: asyncapi-accessor-v3 }
-          - { path: asyncapi-importer-cli, name: asyncapi-importer-cli }
-          - { path: asyncapi-importer-core, name: asyncapi-importer-core }
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -69,7 +54,7 @@ jobs:
           ddb_item_to_be_added: |
             {
               "squad": "cto",
-              "repository": "${{ matrix.name }}",
+              "repository": "${{ github.event.repository.name }}",
               "dev": {
                 "sha": "${{ github.sha }}",
                 "version": "${{ github.ref_name }}"
