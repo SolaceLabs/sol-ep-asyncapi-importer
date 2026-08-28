@@ -1,0 +1,25 @@
+version: 3
+
+project:
+  locator: SolaceLabs_sol-ep-asyncapi-importer
+  id: SolaceLabs_sol-ep-asyncapi-importer
+  name: sol-ep-asyncapi-importer
+  teams: []
+  labels:
+    - java
+
+vendoredDependencies:
+  forceRescans: false
+  scanMethod: CLILicenseScan
+  licenseScanPathFilters:
+    exclude:
+      - "./.git"
+      - "./.github"
+
+paths:
+  exclude:
+    - ./.git
+    - ./.github
+
+telemetry:
+  scope: full
